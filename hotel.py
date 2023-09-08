@@ -25,21 +25,12 @@ def leerArchivo(personas):
             personas.append(reservacion)
     return personas
 
+
+
 def imprimir(personas):
     # Ahora imprime los nuevos datos (esto hay que cambiarlo despues para que lo imprima como tabla)
     for r in personas:
-        print("""
-        ID: {}
-        NOMBRE: {}
-        HABITACION: {}
-        TIPO DE HAB: {}
-        PRECIO: {}
-        CANTIDAD DE PERSONAS: {}
-        FECHA DE RESERVACION: {}
-        FECHA DE ENTRADA: {}
-        FECHA DE SALIDA: {}
-        DURACION DE ESTADIA: {}
-        """.format(r.id, r.nombre, r.habitacion, r.tipo, r.precio, r.num_personas, r.reserva, r.entrada, r.salida, r.duracion))
+        print(" | ".join([r.id, r.nombre, r.habitacion, r.tipo, r.precio, r.num_personas, r.reserva, r.entrada, r.salida, r.duracion]))
         
 def main():
     while True:
