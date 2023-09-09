@@ -21,6 +21,7 @@ class control:
                     j -= interval
                 lista[j] = temp
             interval //= 2
+
     """DESCENDENTE"""
     def shellSort_d(self, lista, n):
         dic = Reservacion.re_clientes
@@ -35,6 +36,11 @@ class control:
                     j -= interval
                 lista[j] = temp
             interval //= 2
+            
+    
+
+
+
 class Reservacion:
     re_clientes = {} 
     """Diccionario que guarda el numero de reservaciones que tiene el cliente
@@ -59,6 +65,30 @@ class Reservacion:
         else:
             Reservacion.re_clientes[nombre] += 1
 
+def quicksort(lista, inicio, fin, key=lambda x: x.habitacion):
+    if inicio < fin:
+        pivote = particionar(lista, inicio, fin, key=key)
+        quicksort(lista, inicio, pivote - 1, key=key)
+        quicksort(lista, pivote + 1, fin, key=key)
+
+
+def particionar(lista, inicio, fin, key=lambda x: x.habitacion):
+    pivote = lista[inicio]
+    i = inicio + 1
+    j = fin
+    while i <= j:
+        while key(lista[i]) < key(pivote):
+            i += 1
+
+        while key(lista[j]) > key(pivote):
+            j -= 1
+
+        if i <= j:
+            lista[i], lista[j] = lista[j], lista[i]
+            i += 1
+            j -= 1
+
+    return i - 1
 def leerArchivo(personas):
     with open("hotel.csv","r") as archivo:
         lector_csv = csv.reader(archivo,delimiter=";")
@@ -73,8 +103,12 @@ def leerArchivo(personas):
 def imprimir(personas):
     # Ahora imprime los nuevos datos (esto hay que cambiarlo despues para que lo imprima como tabla)
     for r in personas:
-        print(" | ".join([r.id, r.nombre, r.habitacion, r.tipo, r.precio, r.num_personas, r.reserva, r.entrada, r.salida, r.duracion]))
-        
+        print(" | ".join([r.id, r.nombre, r.habitacion, r.tipo, r.precio, r.num_personas, r.reserva, r.entrada, r.salida, r.duracion])) 
+  
+def imprimir_habitacion(personas):
+    # Ahora imprime solo la habitacion de cada reserva
+    for r in personas:
+        print(r.habitacion)
 def main():
     while True:
         personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
@@ -84,6 +118,7 @@ def main():
         Seleccione una opcion:
         1 - Imprimir datos
         2 - SHELLSORT (PRUEBA)
+        3 - QUICKSORT (Prueba tambien XD)
         0 - salir
         """)
         
@@ -103,6 +138,12 @@ def main():
             imprimir(personas.lista)
             print("\nORGANIZADO POR NUMERO DE RESERVACIONES")
 
+        if opcion == 3:
+            quicksort(personas.lista, 0, len(personas.lista) - 1, key=lambda x: x.habitacion)
+            imprimir(personas.lista)
+            break
+
         if opcion == 0:
             break
+
 main()
