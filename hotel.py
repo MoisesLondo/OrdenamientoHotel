@@ -1,5 +1,5 @@
 import csv
-
+import datetime
 class control:
     def __init__(self, lista):
         self.lista = lista
@@ -90,7 +90,7 @@ def particionar(lista, inicio, fin, key=lambda x: x.habitacion):
 
     return i - 1
 def leerArchivo(personas):
-    with open("hotel.csv","r") as archivo:
+    with open("hotel.csv","r", encoding="UTF-8") as archivo:
         lector_csv = csv.reader(archivo,delimiter=";")
         for fila in lector_csv:
             iden, nombre, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion = fila
@@ -109,6 +109,43 @@ def imprimir_habitacion(personas):
     # Ahora imprime solo la habitacion de cada reserva
     for r in personas:
         print(r.habitacion)
+
+def fecha(texto):
+    fecha = datetime.datetime.strptime(texto, '%d/%m/%Y')
+    fecha2 = fecha.date()
+    return fecha2
+
+def imprimir_r(personas,f1,f2):
+    for r in personas:
+        f3 = fecha(r.reserva)
+        if f3>= f1 and f3 <= f2:
+            print(" | ".join([r.id, r.nombre, r.habitacion, r.tipo, r.precio, r.num_personas, r.reserva, r.entrada, r.salida, r.duracion])) 
+
+def merge_sort(list, compare_func):
+    list_length = len(list)
+    if list_length == 1:
+        return list
+    mid_point = list_length // 2
+    left_partition = merge_sort(list[:mid_point], compare_func)
+    right_partition = merge_sort(list[mid_point:], compare_func)
+    return merge(left_partition, right_partition, compare_func)
+
+def merge(left, right, compare_func):
+    output = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if compare_func(left[i], right[j]):
+            output.append(left[i])
+            i += 1
+        else:
+            output.append(right[j])
+            j += 1
+    output.extend(left[i:])
+    output.extend(right[j:])
+    return output
+
+def compare_reservaciones(reservacion1, reservacion2):
+    return reservacion1.precio < reservacion2.precio
 def main():
     while True:
         personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
@@ -119,13 +156,14 @@ def main():
         1 - Imprimir datos
         2 - SHELLSORT (PRUEBA)
         3 - QUICKSORT (Prueba tambien XD)
+        4 - Ordenamiento por rango
         0 - salir
         """)
         
         opcion = int(input("> "))
 
         if opcion == 1:
-            imprimir(personas)
+            imprimir(personas.lista)
 
         if opcion == 2:
             print("ORIGINAL:\n")
@@ -142,6 +180,23 @@ def main():
             quicksort(personas.lista, 0, len(personas.lista) - 1, key=lambda x: x.habitacion)
             imprimir(personas.lista)
             break
+
+        if opcion == 4:
+            try:
+                f1 = input("Rango inferior (dd/mm/AAAA): ")
+                f2 = input("Rango superior (dd/mm/AAAA): ")
+                fd1 = fecha(f1)
+                fd2 = fecha(f2)
+                if fd2 > fd1:
+                    sorted = merge_sort(personas.lista,compare_reservaciones)
+                    print("\n\n")
+                    print("En el rango de ",f1, " a ", f2)
+                    imprimir_r(sorted,fd1,fd2)
+                else:
+                    print("\nRango no válido")
+            except Exception as e:
+                print("\nEl valor ingresado no es válido, use el formato dd/mm/AAAA")
+
 
         if opcion == 0:
             break
