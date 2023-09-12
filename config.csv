@@ -1,2 +1,3 @@
-asc;EL MEJOR HOTEL;;
-des;EL PEOR HOTEL;;
+1;des;EL MEJOR HOTEL;hotel.csv
+2;des;EL PEOR HOTEL;pruebas/hotel2.csv
+2;asc;PEPE;hotel.csv

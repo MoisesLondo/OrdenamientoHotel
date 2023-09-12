@@ -1,18 +1,61 @@
 import csv
 import datetime
+import os
 
 def incializar():
     opcion = []
     valores = []
-    with open("config.csv", "r") as doc:
+    with open(control.rta_cfg, "r") as doc:
         reader = csv.reader(doc,delimiter=";")
         for fila in reader:
-            opcion.append(f"{fila[1]}, {fila[0]}")
+            opcion.append(f"HOTEL: {fila[2]}, CONFIGURACION: {fila[1]}")
             valores.append(fila)
 
         op = menu("Seleccione una configuracion:",opcion,valores)
         
-        control.cond, control.desc, control.rta_cfg, control.rta_hotel = op
+        control.id, control.cond, control.desc, control.rta_hotel = op
+        control.id = int(control.id)
+
+def modificar():
+    op = False
+    lista = []
+    with open(control.rta_cfg, "r") as doc:
+        reader = csv.reader(doc,delimiter=";")
+        for fila in reader:
+            lista.append(fila)
+    
+    n = control.id - 1
+    op = menu("Indique que dato desea modificar: ",["Orden", "Descripcion", "Ruta del archivo"],[1,2,3])
+    if op == 1:
+        lista[n][1] = menu("Indique en que orden se organizaran los datos",["Ascendente","Descendente"],["asc","des"])
+    if op == 2:
+        lista[n][2] = input("Escriba la nueva descripcion: ")
+    if op == 3:
+        lista[n][3] = input("Escriba la nueva ruta del archivo: ")
+
+    with open(control.rta_cfg, "w", newline="") as doc:
+        writer = csv.writer(doc, delimiter=";")
+        writer.writerows(lista)
+
+    control.id, control.cond, control.desc, control.rta_hotel = lista[n]
+
+    print("Operacion realizada exitosamente\n")
+
+def crear():
+    id = 0
+    cfg = menu("Indique en que orden se organizaran los datos",["Ascendente","Descendente"],["asc","des"])
+    desc = input("Escriba la nueva descripcion: ")
+    ruta = input("Escriba la nueva ruta del archivo: ")
+
+    with open(control.rta_cfg, "r") as doc:
+        reader = csv.reader(doc,delimiter=";")
+        for i in reader:
+            id += 1
+
+    with open(control.rta_cfg, "a", newline="") as doc:
+        writer = csv.writer(doc, delimiter=";")
+        writer.writerow([id, cfg, desc, ruta])
+    
 
 """Funcion que te crea un menu
     le tienen que enviar el mensaje de lo que pide, una lista de las opciones que va a mostrar,
@@ -33,7 +76,6 @@ def menu(msg, opciones, valores):
         if op - 1 in range(len(valores)):
             print()
             return(valores[op-1])
-    
         print("Ingrese una opcion valida")
 
 class control:
@@ -170,7 +212,7 @@ class Reservacion:
             Reservacion.re_clientes[nombre] += 1
 
 def leerArchivo(personas):
-    with open("hotel.csv","r", encoding="UTF-8") as archivo:
+    with open(control.rta_hotel,"r", encoding="UTF-8") as archivo:
         lector_csv = csv.reader(archivo,delimiter=";")
         for fila in lector_csv:
             iden, nombre, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion = fila
@@ -184,6 +226,11 @@ def imprimir_fecha(fecha):
     return "{}-{}-{}".format(fecha.year, fecha.month, fecha.day)
 
 def imprimir(personas):
+
+    if len (personas) == 0:
+        print("NO HAY DATOS QUE MOSTRAR\n") 
+        return
+    
     linea = ""
     for i in [8,16,12,12,12,16,12,25,10]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
         linea += "+" + "-"*i
@@ -227,28 +274,32 @@ def compare_reservaciones(reservacion1, reservacion2):
     return reservacion1.precio < reservacion2.precio
 
 def main():
+    op = menu("Utilizar la ruta por defecto para el archivo de configuracion?",["Si","No"],[True,False])
+    if op:
+        control.rta_cfg = str(os.path.abspath(os.getcwd())) + "\config.csv"
+    else:
+        control.rta_cfg = input("Ingrese la ruta del archivo de configuracion: ")
+
     incializar() # CARGA EL ARCHIVO DE CONFIGURACION
 
     while True:
         personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
 
-        print(control.desc + "\n")
+        print(f"DESC: {control.desc} CFG: {control.cond} RUTA: {control.rta_hotel}\n")
 
         opciones = ['Imprimir datos',"SHELLSORT (por n de reservas) ",'Selección de Criterios de Ordenamiento',
-                    'Ordenamiento por rango', "HEAPSORT (por duracion)","Ordenamiento Múltiple","Cambiar configuracion","salir"]
+                    'Ordenamiento por rango', "HEAPSORT (por duracion)","Ordenamiento Múltiple","Cambiar configuracion",
+                    "Modificar Configuracion Actual","Crear Configuracion","Cambiar ruta de archivo de configuracion"]
         
-        opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7])
+        opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8,9,10])
 
         if opcion == 1:
             imprimir(personas.lista)
 
         if opcion == 2:
-            print("ORIGINAL:\n")
-            imprimir(personas.lista)
             print("SHELLSORT:\n")
             personas.shellSort(personas.lista, len(personas.lista))
             imprimir(personas.lista)
-            print("\nORGANIZADO POR NUMERO DE RESERVACIONES\ncondicion: "+control.cond)
 
         if opcion == 3:
             subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
@@ -303,6 +354,16 @@ def main():
             incializar()
 
         if opcion == 8:
-            break
+            modificar()
+
+        if opcion == 9:
+            crear()
+
+        if opcion == 10:
+            op = menu("Utilizar la ruta por defecto para el archivo de configuracion?",["Si","No"],[True,False])
+            if op:
+                control.rta_cfg = str(os.path.abspath(os.getcwd())) + "\config.csv"
+            else:
+                control.rta_cfg = input("Ingrese la ruta del archivo de configuracion: ")
 
 main()
