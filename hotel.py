@@ -93,35 +93,25 @@ class control:
 """QUICKSORT"""
 def quicksort(lista, inicio, fin, key=lambda x: x.habitacion):
     if inicio < fin:
-        pivote = lista[(inicio + fin) // 2]
-        i = inicio
-        j = fin
-        while i < j:
-            while key(lista[i]) < key(pivote) and i < fin:
-                i += 1   
-            while key(lista[j]) > key(pivote):
-                j -= 1
-            if i < j:
-                lista[i], lista[j] = lista[j], lista[i]
-                i += 1
-                j -= 1
-        quicksort(lista, inicio, i, key=key)
-        quicksort(lista, i + 1, fin, key=key)
+        p = particionar(lista, inicio, fin, key=key)
+        quicksort(lista, inicio, p - 1, key=key)
+        quicksort(lista, p + 1, fin, key=key)
 
 def particionar(lista, inicio, fin, key=lambda x: x.habitacion):
+    pivote = key(lista[inicio])
     i = inicio + 1
     j = fin
     while i <= j:
-        pivote = lista[(inicio + fin) // 2]
-        while key(lista[j]) <= key(pivote):
+        while i <= j and key(lista[i]) <= pivote:
+            i += 1
+        while i <= j and key(lista[j]) > pivote:
             j -= 1
-
         if i <= j:
             lista[i], lista[j] = lista[j], lista[i]
             i += 1
             j -= 1
-    return i + 1
-
+    lista[inicio], lista[j] = lista[j], lista[inicio]
+    return j
 
 """MERGESORT"""
 def merge_sort(list, compare_func):
