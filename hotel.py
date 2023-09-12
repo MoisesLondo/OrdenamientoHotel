@@ -1,14 +1,46 @@
 import csv
 import datetime
+
+def incializar():
+    with open("config.csv", "r") as doc:
+        reader = csv.reader(doc,delimiter=";")
+        for fila in reader:
+            control.cond, control.desc, control.rta_cfg, control.rta_hotel = fila
+
+"""Funcion que te crea un menu
+    le tienen que enviar el mensaje de lo que pide, una lista de las opciones que va a mostrar,
+    y una lista de valores que va a devolver
+    
+    EJ: se elije la opcion 6 de la lista de opciones, entonces devuelve el valor 6 de la lista de valores"""
+def menu(msg, opciones, valores):
+    c = 1
+    op = 0
+    print(msg)
+    for i in opciones:
+        print(f"    ({c}) - {i}")
+        c += 1
+
+    while op - 1 not in range(len(valores)):
+        op = int(input("\n> "))
+
+        if op - 1 in range(len(valores)):
+            print()
+            return(valores[op-1])
+    
+        print("Ingrese una opcion valida")
+
 class control:
-    condicion = "d" # < ------------- MIENTRAS
+    cond = ""
+    desc = ""
+    rta_cfg = ""
+    rta_hotel = ""
+
     def __init__(self, lista):
         self.lista = lista
 
     """ALGORITMO SHELLSHORT PARA ORGANIZAR POR NUM DE RESERVACIONES (2)
         UTILIZA DICCIONARIO re_clientes PARA COMPARAR"""
-
-    """SHELLSORT"""
+    
     def shellSort(self, lista, n):
         dic = Reservacion.re_clientes
         interval = n // 2
@@ -25,10 +57,10 @@ class control:
 
     @staticmethod
     def shellsort_compare(x, y):
-        if control.condicion == "a":
+        if control.cond == "asc":
             return x > y
         
-        if control.condicion == "d":
+        if control.cond == "des":
             return x < y
 
     """HEAPSORT"""
@@ -165,7 +197,7 @@ def imprimir(personas):
     for r in personas:
         print(cadena.format(r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, r.reserva, r.entrada, r.salida, str(r.duracion))) 
     
-    print(linea)
+    print(linea + "\n")
   
 def imprimir_habitacion(personas):
     # Ahora imprime solo la habitacion de cada reserva
@@ -191,21 +223,17 @@ def compare_reservaciones(reservacion1, reservacion2):
     return reservacion1.precio < reservacion2.precio
 
 def main():
+    incializar() # CARGA EL ARCHIVO DE CONFIGURACION
+
     while True:
         personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
 
-        print(
-        """
-        Seleccione una opcion:
-        1 - Imprimir datos
-        2 - SHELLSORT (por n de reservas) 
-        3 - QUICKSORT (Prueba tambien XD) BRUUH
-        4 - Ordenamiento por rango
-        5 - HEAPSORT (por duracion)
-        0 - salir
-        """)
+        print(control.desc + "\n")
+
+        opciones = ['Imprimir datos',"SHELLSORT (por n de reservas) ",'QUICKSORT (Prueba tambien XD) BRUUH',
+                    'Ordenamiento por rango', "HEAPSORT (por duracion)","salir"]
         
-        opcion = int(input("> "))
+        opcion = menu("SELECCIONE UNA OPCION: ", opciones, [1,2,3,4,5,6])
 
         if opcion == 1:
             imprimir(personas.lista)
@@ -216,7 +244,7 @@ def main():
             print("SHELLSORT:\n")
             personas.shellSort(personas.lista, len(personas.lista))
             imprimir(personas.lista)
-            print("\nORGANIZADO POR NUMERO DE RESERVACIONES\ncondicion: "+control.condicion)
+            print("\nORGANIZADO POR NUMERO DE RESERVACIONES\ncondicion: "+control.cond)
 
         if opcion == 3:
             quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
