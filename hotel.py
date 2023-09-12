@@ -150,9 +150,9 @@ class Reservacion:
         self.tipo = tipo
         self.precio = float(precio)
         self.num_personas = num_personas
-        self.reserva = reserva
-        self.entrada = entrada
-        self.salida = salida
+        self.reserva = fecha(reserva)
+        self.entrada = fecha(entrada)
+        self.salida = fecha(salida)
         self.duracion = int(duracion)
 
         """IF que busca si el nombre del cliente esta en el diccionario, si esta le asigna 1
@@ -173,6 +173,9 @@ def leerArchivo(personas):
             personas.append(reservacion)
     return personas
 
+def imprimir_fecha(fecha):
+    return "{}-{}-{}".format(fecha.year, fecha.month, fecha.day)
+
 def imprimir(personas):
     linea = ""
     for i in [8,16,12,12,12,16,12,25,10]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
@@ -185,7 +188,7 @@ def imprimir(personas):
 
     cadena = "| {:^6} | {:<15}| {:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>8} |"
     for r in personas:
-        print(cadena.format(r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, r.reserva, r.entrada, r.salida, str(r.duracion))) 
+        print(cadena.format(r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), str(r.duracion))) 
     
     print(linea + "\n")
   
@@ -223,7 +226,7 @@ def main():
         opciones = ['Imprimir datos',"SHELLSORT (por n de reservas) ",'QUICKSORT (Prueba tambien XD) BRUUH',
                     'Ordenamiento por rango', "HEAPSORT (por duracion)","salir"]
         
-        opcion = menu("SELECCIONE UNA OPCION: ", opciones, [1,2,3,4,5,6])
+        opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6])
 
         if opcion == 1:
             imprimir(personas.lista)
@@ -237,8 +240,17 @@ def main():
             print("\nORGANIZADO POR NUMERO DE RESERVACIONES\ncondicion: "+control.cond)
 
         if opcion == 3:
-            quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
-            imprimir(personas.lista)
+            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
+            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3])
+            if submenu == 1:
+                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
+                imprimir(personas.lista)
+            elif submenu == 2:
+                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
+                imprimir(personas.lista)
+            elif submenu == 3:
+                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.duracion)
+                imprimir(personas.lista)
 
         if opcion == 4:
             try:
