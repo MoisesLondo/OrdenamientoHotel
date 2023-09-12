@@ -67,26 +67,35 @@ class control:
 """QUICKSORT"""
 def quicksort(lista, inicio, fin, key=lambda x: x.habitacion):
     if inicio < fin:
-        pivote = particionar(lista, inicio, fin, key=key)
-        quicksort(lista, inicio, pivote - 1, key=key)
-        quicksort(lista, pivote + 1, fin, key=key)
+        pivote = lista[(inicio + fin) // 2]
+        i = inicio
+        j = fin
+        while i < j:
+            while key(lista[i]) < key(pivote) and i < fin:
+                i += 1   
+            while key(lista[j]) > key(pivote):
+                j -= 1
+            if i < j:
+                lista[i], lista[j] = lista[j], lista[i]
+                i += 1
+                j -= 1
+        quicksort(lista, inicio, i, key=key)
+        quicksort(lista, i + 1, fin, key=key)
 
 def particionar(lista, inicio, fin, key=lambda x: x.habitacion):
-    pivote = lista[inicio]
     i = inicio + 1
     j = fin
     while i <= j:
-        while key(lista[i]) < key(pivote):
-            i += 1
-
-        while key(lista[j]) > key(pivote):
+        pivote = lista[(inicio + fin) // 2]
+        while key(lista[j]) <= key(pivote):
             j -= 1
 
         if i <= j:
             lista[i], lista[j] = lista[j], lista[i]
             i += 1
             j -= 1
-    return i - 1
+    return i + 1
+
 
 """MERGESORT"""
 def merge_sort(list, compare_func):
@@ -208,7 +217,7 @@ def main():
             print("\nORGANIZADO POR NUMERO DE RESERVACIONES")
 
         if opcion == 3:
-            quicksort(personas.lista, 0, len(personas.lista) - 1, key=lambda x: x.habitacion)
+            quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
             imprimir(personas.lista)
 
         if opcion == 4:
