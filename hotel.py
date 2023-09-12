@@ -152,9 +152,20 @@ def leerArchivo(personas):
     return personas
 
 def imprimir(personas):
-    for r in personas:
+    linea = ""
+    for i in [8,16,12,12,12,16,12,25,10]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
+        linea += "+" + "-"*i
+    linea += "+"
 
-        print(" | ".join([r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, r.reserva, r.entrada, r.salida, str(r.duracion)])) 
+    print(linea)
+    print("| ID     | NOMBRE         | HABITACION | TIPO       | PRECIO     | N° DE PERSONAS | RESERVA    |    ENTRADA - SALIDA     | DURACION |")
+    print(linea)
+
+    cadena = "| {:^6} | {:<15}| {:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>8} |"
+    for r in personas:
+        print(cadena.format(r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, r.reserva, r.entrada, r.salida, str(r.duracion))) 
+    
+    print(linea)
   
 def imprimir_habitacion(personas):
     # Ahora imprime solo la habitacion de cada reserva
@@ -167,10 +178,14 @@ def fecha(texto):
     return fecha2
 
 def imprimir_r(personas,f1,f2):
+    lista = []
     for r in personas:
         f3 = fecha(r.reserva)
         if f3>= f1 and f3 <= f2:
-            print(" | ".join([r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, r.reserva, r.entrada, r.salida, str(r.duracion)])) 
+            lista.append(r)
+    imprimir(lista)
+
+    """Moi cambie tu vaina para que sea compatible con la funcion de la tabla, igual es una estupidez XD"""
 
 def compare_reservaciones(reservacion1, reservacion2):
     return reservacion1.precio < reservacion2.precio
