@@ -1,14 +1,15 @@
 import csv
 import datetime
 class control:
+    condicion = "d" # < ------------- MIENTRAS
     def __init__(self, lista):
         self.lista = lista
 
     """ALGORITMO SHELLSHORT PARA ORGANIZAR POR NUM DE RESERVACIONES (2)
         UTILIZA DICCIONARIO re_clientes PARA COMPARAR"""
-    
-    """ASCENDENTE"""
-    def shellSort_a(self, lista, n):
+
+    """SHELLSORT"""
+    def shellSort(self, lista, n):
         dic = Reservacion.re_clientes
         interval = n // 2
 
@@ -16,26 +17,19 @@ class control:
             for i in range(interval, n):
                 temp = lista[i]
                 j = i
-                while j >= interval and dic[lista[j - interval].nombre] > dic[temp.nombre]:
+                while j >= interval and control.shellsort_compare(dic[lista[j - interval].nombre], dic[temp.nombre]):
                     lista[j] = lista[j - interval]
                     j -= interval
                 lista[j] = temp
             interval //= 2
 
-    """DESCENDENTE"""
-    def shellSort_d(self, lista, n):
-        dic = Reservacion.re_clientes
-        interval = n // 2
-
-        while interval > 0:
-            for i in range(interval, n):
-                temp = lista[i]
-                j = i
-                while j >= interval and dic[lista[j - interval].nombre] < dic[temp.nombre]:
-                    lista[j] = lista[j - interval]
-                    j -= interval
-                lista[j] = temp
-            interval //= 2
+    @staticmethod
+    def shellsort_compare(x, y):
+        if control.condicion == "a":
+            return x > y
+        
+        if control.condicion == "d":
+            return x < y
 
     """HEAPSORT"""
     def heapify(self, lista, n, i):
@@ -158,11 +152,7 @@ def leerArchivo(personas):
     return personas
 
 def imprimir(personas):
-    # print("*"*100)
-    # print("* ID     * NOMBRE        * HABITACION * TIPO   * PRECIO  * DURACION DE ESTANCIA *")
     for r in personas:
-        # print("* " + r.id + " "*(8-len(r.id)), end="")
-        # print("* " + r.nombre + " "*(10-len(r.nombre)), end="")
 
         print(" | ".join([r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, r.reserva, r.entrada, r.salida, str(r.duracion)])) 
   
@@ -208,13 +198,10 @@ def main():
         if opcion == 2:
             print("ORIGINAL:\n")
             imprimir(personas.lista)
-            print("SHELLSORT (ascendente):\n")
-            personas.shellSort_a(personas.lista, len(personas.lista))
+            print("SHELLSORT:\n")
+            personas.shellSort(personas.lista, len(personas.lista))
             imprimir(personas.lista)
-            print("SHELLSORT (descendente):\n")
-            personas.shellSort_d(personas.lista, len(personas.lista))
-            imprimir(personas.lista)
-            print("\nORGANIZADO POR NUMERO DE RESERVACIONES")
+            print("\nORGANIZADO POR NUMERO DE RESERVACIONES\ncondicion: "+control.condicion)
 
         if opcion == 3:
             quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
