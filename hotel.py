@@ -2,10 +2,17 @@ import csv
 import datetime
 
 def incializar():
+    opcion = []
+    valores = []
     with open("config.csv", "r") as doc:
         reader = csv.reader(doc,delimiter=";")
         for fila in reader:
-            control.cond, control.desc, control.rta_cfg, control.rta_hotel = fila
+            opcion.append(f"{fila[1]}, {fila[0]}")
+            valores.append(fila)
+
+        op = menu("Seleccione una configuracion:",opcion,valores)
+        
+        control.cond, control.desc, control.rta_cfg, control.rta_hotel = op
 
 """Funcion que te crea un menu
     le tienen que enviar el mensaje de lo que pide, una lista de las opciones que va a mostrar,
@@ -228,7 +235,7 @@ def main():
         print(control.desc + "\n")
 
         opciones = ['Imprimir datos',"SHELLSORT (por n de reservas) ",'Selección de Criterios de Ordenamiento',
-                    'Ordenamiento por rango', "HEAPSORT (por duracion)","Ordenamiento Múltiple","salir"]
+                    'Ordenamiento por rango', "HEAPSORT (por duracion)","Ordenamiento Múltiple","Cambiar configuracion","salir"]
         
         opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7])
 
@@ -293,6 +300,9 @@ def main():
                 imprimir_r(personas.lista,fd1)
 
         if opcion == 7:
+            incializar()
+
+        if opcion == 8:
             break
 
 main()
