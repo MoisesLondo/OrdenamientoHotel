@@ -202,12 +202,16 @@ def fecha(texto):
     fecha2 = fecha.date()
     return fecha2
 
-def imprimir_r(personas,f1,f2):
+def imprimir_r(personas, f1, f2=None):
     lista = []
     for r in personas:
-        f3 = fecha(r.reserva)
-        if f3>= f1 and f3 <= f2:
-            lista.append(r)
+        f3 = r.reserva
+        if f2:
+            if f1 <= f3 <= f2:
+                lista.append(r)
+        else:
+            if f3 == f1:
+                lista.append(r)
     imprimir(lista)
 
     """Moi cambie tu vaina para que sea compatible con la funcion de la tabla, igual es una estupidez XD"""
@@ -223,10 +227,10 @@ def main():
 
         print(control.desc + "\n")
 
-        opciones = ['Imprimir datos',"SHELLSORT (por n de reservas) ",'QUICKSORT (Prueba tambien XD) BRUUH',
-                    'Ordenamiento por rango', "HEAPSORT (por duracion)","salir"]
+        opciones = ['Imprimir datos',"SHELLSORT (por n de reservas) ",'Selección de Criterios de Ordenamiento',
+                    'Ordenamiento por rango', "HEAPSORT (por duracion)","Ordenamiento Múltiple","salir"]
         
-        opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6])
+        opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7])
 
         if opcion == 1:
             imprimir(personas.lista)
@@ -242,15 +246,19 @@ def main():
         if opcion == 3:
             subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
             submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3])
+            f1 = input("Fecha (dd/mm/AAAA): ")
+            fd1 = fecha(f1)
             if submenu == 1:
                 quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
-                imprimir(personas.lista)
+                imprimir_r(personas.lista,fd1)
             elif submenu == 2:
                 quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
-                imprimir(personas.lista)
+                imprimir_r(personas.lista,fd1)
             elif submenu == 3:
                 quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.duracion)
-                imprimir(personas.lista)
+                imprimir_r(personas.lista,fd1)
+            else:
+                print("Ingrese una opción valida")
 
         if opcion == 4:
             try:
@@ -272,7 +280,19 @@ def main():
             personas.heapSort(personas.lista)
             imprimir(personas.lista)
 
-        if opcion == 0:
+        if opcion == 6:
+            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación']
+            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2])
+            f1 = input("Fecha (dd/mm/AAAA): ")
+            fd1 = fecha(f1)
+            if submenu == 1:
+                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
+                imprimir_r(personas.lista,fd1)
+            elif submenu == 2:
+                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
+                imprimir_r(personas.lista,fd1)
+
+        if opcion == 7:
             break
 
 main()
