@@ -158,7 +158,7 @@ def particionar(lista, inicio, fin, key=lambda x: x.habitacion):
     i = inicio + 1
     j = fin
     while i <= j:
-        if control.cond == "asc:":
+        if control.cond == "asc":
             while i <= j and key(lista[i]) <= pivote:
                 i += 1
             while i <= j and key(lista[j]) > pivote:
