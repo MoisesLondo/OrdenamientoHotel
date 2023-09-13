@@ -292,7 +292,10 @@ def imprimir_r(personas, f1, f2=None):
     """Moi cambie tu vaina para que sea compatible con la funcion de la tabla, igual es una estupidez XD"""
 
 def compare_reservaciones(reservacion1, reservacion2):
-    return reservacion1.precio < reservacion2.precio
+    if control.cond == "asc":
+        return reservacion1.precio < reservacion2.precio
+    elif control.cond == "des":
+        return reservacion1.precio > reservacion2.precio
 
 def main(val = True):
     op = menu("Utilizar la ruta por defecto del archivo de configuracion?",["Si","No"],[True,False])
