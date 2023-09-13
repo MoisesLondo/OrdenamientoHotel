@@ -5,16 +5,20 @@ import os
 def incializar():
     opcion = []
     valores = []
-    with open(control.rta_cfg, "r") as doc:
-        reader = csv.reader(doc,delimiter=";")
-        for fila in reader:
-            opcion.append(f"HOTEL: {fila[2]}, CONFIGURACION: {fila[1]}")
-            valores.append(fila)
+    try:
+        with open(control.rta_cfg, "r") as doc:
+            reader = csv.reader(doc,delimiter=";")
+            for fila in reader:
+                opcion.append(f"HOTEL: {fila[2]}, CONFIGURACION: {fila[1]}")
+                valores.append(fila)
 
-        op = menu("Seleccione una configuracion:",opcion,valores)
-        
-        control.id, control.cond, control.desc, control.rta_hotel = op
-        control.id = int(control.id)
+            op = menu("Seleccione una configuracion:",opcion,valores)
+            
+            control.id, control.cond, control.desc, control.rta_hotel = op
+            control.id = int(control.id)
+    except FileNotFoundError:
+        print("No es encontro el archivo de configuracion, verifique la ruta\n")
+        main()
 
 def modificar():
     op = False
@@ -24,7 +28,7 @@ def modificar():
         for fila in reader:
             lista.append(fila)
     
-    n = control.id - 1
+    n = int(control.id) - 1
     op = menu("Indique que dato desea modificar: ",["Orden", "Descripcion", "Ruta del archivo"],[1,2,3])
     if op == 1:
         lista[n][1] = menu("Indique en que orden se organizaran los datos",["Ascendente","Descendente"],["asc","des"])
@@ -38,6 +42,7 @@ def modificar():
         writer.writerows(lista)
 
     control.id, control.cond, control.desc, control.rta_hotel = lista[n]
+    lista[n][0] = int(lista[n][0])
 
     print("Operacion realizada exitosamente\n")
 
@@ -55,7 +60,6 @@ def crear():
     with open(control.rta_cfg, "a", newline="") as doc:
         writer = csv.writer(doc, delimiter=";")
         writer.writerow([id, cfg, desc, ruta])
-    
 
 """Funcion que te crea un menu
     le tienen que enviar el mensaje de lo que pide, una lista de las opciones que va a mostrar,
@@ -83,6 +87,7 @@ class control:
     desc = ""
     rta_cfg = ""
     rta_hotel = ""
+    val_rta = False
 
     def __init__(self, lista):
         self.lista = lista
@@ -216,39 +221,45 @@ class Reservacion:
             Reservacion.re_clientes[nombre] += 1
 
 def leerArchivo(personas):
-    with open(control.rta_hotel,"r", encoding="UTF-8") as archivo:
-        lector_csv = csv.reader(archivo,delimiter=";")
-        for fila in lector_csv:
-            iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida= fila
-            #Las variables se pueden asignar solas, si tiene el mismo numero de datos
+    try:
+        with open(control.rta_hotel,"r", encoding="UTF-8") as archivo:
+            lector_csv = csv.reader(archivo,delimiter=";")
+            for fila in lector_csv:
+                iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida= fila
+                #Las variables se pueden asignar solas, si tiene el mismo numero de datos
 
-            reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida)
-            personas.append(reservacion)
-    return personas
+                reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida)
+                personas.append(reservacion)
+        control.val_rta = True
+        return personas
+    except FileNotFoundError:
+        print("No se encontro el archivo del hotel, favor verificar la ruta\n")
+        control.val_rta = False
 
 def imprimir_fecha(fecha):
     return "{}-{}-{}".format(fecha.day, fecha.month, fecha.year)
 
 def imprimir(personas):
-
     if len (personas) == 0:
         print("NO HAY DATOS QUE MOSTRAR\n") 
         return
     
     linea = ""
-    for i in [8,16,12,10,12,12,16,12,25,10]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
+    for i in [8,16,12,12,12,12,16,12,25,17]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
         linea += "+" + "-"*i
     linea += "+"
 
     print(linea)
-    print("| ID     | NOMBRE       |   CEDULA     |  HABITACION |   TIPO     |   PRECIO  |  N° DE PERSONAS | RESERVA    |  ENTRADA - SALIDA  | DURACION |")
+    print("| ID     | NOMBRE         | CEDULA     | HABITACION | TIPO       | PRECIO     | N° DE PERSONAS | RESERVA    |     ENTRADA - SALIDA    | DURACION (DIAS) |")
     print(linea)
 
-    cadena = "| {:^6} | {:<15}|{:^10} |{:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>8} |"
+    cadena = "| {:^6} | {:<15}| {:<10} | {:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>15} |"
     for r in personas:
         print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
     
     print(linea + "\n")
+    input("Presione ENTER para continuar ")
+    print()
   
 def imprimir_habitacion(personas):
     # Ahora imprime solo la habitacion de cada reserva
@@ -283,35 +294,45 @@ def imprimir_r(personas, f1, f2=None):
 def compare_reservaciones(reservacion1, reservacion2):
     return reservacion1.precio < reservacion2.precio
 
-def main():
-    op = menu("Utilizar la ruta por defecto para el archivo de configuracion?",["Si","No"],[True,False])
+def main(val = True):
+    op = menu("Utilizar la ruta por defecto del archivo de configuracion?",["Si","No"],[True,False])
     if op:
         control.rta_cfg = str(os.path.abspath(os.getcwd())) + "\config.csv"
     else:
         control.rta_cfg = input("Ingrese la ruta del archivo de configuracion: ")
 
+
     incializar() # CARGA EL ARCHIVO DE CONFIGURACION
 
     while True:
         personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
+        val = control.val_rta
 
-        print(f"DESC: {control.desc} CFG: {control.cond} RUTA: {control.rta_hotel}\n")
+        print(f"\nDESC: {control.desc}\nCFG: {control.cond}\nRUTA: {control.rta_hotel}\n")
 
-        opciones = ['Imprimir datos',"SHELLSORT (por n de reservas) ",'Selección de Criterios de Ordenamiento',
-                    'Ordenamiento por rango', "HEAPSORT (por duracion)","Ordenamiento Múltiple","Cambiar configuracion",
-                    "Modificar Configuracion Actual","Crear Configuracion","Cambiar ruta de archivo de configuracion"]
+        opciones = ['Imprimir datos','Selección de Criterios de Ordenamiento', "Ordenamiento Múltiple",
+                    'Ordenamiento por rango y precio (MERGESORT)', 
+                    "Ordenamiento por numero de reservas (SHELLSORT) ", "Ordenamiento por duracion de estancia (HEAPSORT)",
+                    "Cambiar configuracion","Modificar Configuracion Actual","Crear Configuracion","Cambiar ruta de archivo de configuracion"]
         
         opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8,9,10])
 
-        if opcion == 1:
+        if opcion == 1 and val:
             imprimir(personas.lista)
 
-        if opcion == 2:
-            print("SHELLSORT:\n")
-            personas.shellSort(personas.lista, len(personas.lista))
-            imprimir(personas.lista)
-
-        if opcion == 3:
+        if opcion == 2 and val:
+            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación']
+            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2])
+            f1 = input("Fecha (dd/mm/AAAA): ")
+            fd1 = fecha(f1)
+            if submenu == 1:
+                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
+                imprimir_r(personas.lista,fd1)
+            elif submenu == 2:
+                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
+                imprimir_r(personas.lista,fd1)      
+    
+        if opcion == 3 and val:
             subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
             submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3])
             f1 = input("Fecha (dd/mm/AAAA): ")
@@ -328,7 +349,7 @@ def main():
             else:
                 print("Ingrese una opción valida")
 
-        if opcion == 4:
+        if opcion == 4 and val:
             try:
                 f1 = input("Rango inferior (dd/mm/AAAA): ")
                 f2 = input("Rango superior (dd/mm/AAAA): ")
@@ -344,36 +365,21 @@ def main():
             except Exception as e:
                 print("\nEl valor ingresado no es válido, use el formato dd/mm/AAAA")
 
-        if opcion == 5:
+        if opcion == 5 and val:
+            print("SHELLSORT:\n")
+            personas.shellSort(personas.lista, len(personas.lista))
+            imprimir(personas.lista)
+
+        if opcion == 6 and val:
             personas.heapSort(personas.lista)
             imprimir(personas.lista)
 
-        if opcion == 6:
-            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación']
-            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2])
-            f1 = input("Fecha (dd/mm/AAAA): ")
-            fd1 = fecha(f1)
-            if submenu == 1:
-                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
-                imprimir_r(personas.lista,fd1)
-            elif submenu == 2:
-                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
-                imprimir_r(personas.lista,fd1)
+        if opcion == 7: incializar()
 
-        if opcion == 7:
-            incializar()
+        if opcion == 8: modificar()
 
-        if opcion == 8:
-            modificar()
+        if opcion == 9: crear()
 
-        if opcion == 9:
-            crear()
-
-        if opcion == 10:
-            op = menu("Utilizar la ruta por defecto para el archivo de configuracion?",["Si","No"],[True,False])
-            if op:
-                control.rta_cfg = str(os.path.abspath(os.getcwd())) + "\config.csv"
-            else:
-                control.rta_cfg = input("Ingrese la ruta del archivo de configuracion: ")
+        if opcion == 10: main()
 
 main()
