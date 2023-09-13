@@ -42,7 +42,6 @@ def modificar():
         writer.writerows(lista)
 
     control.id, control.cond, control.desc, control.rta_hotel = lista[n]
-    lista[n][0] = int(lista[n][0])
 
     print("Operacion realizada exitosamente\n")
 
@@ -103,14 +102,14 @@ class control:
             for i in range(interval, n):
                 temp = lista[i]
                 j = i
-                while j >= interval and control.shellsort_compare(dic[lista[j - interval].nombre], dic[temp.nombre]):
+                while j >= interval and control.compare(dic[lista[j - interval].cedula], dic[temp.cedula]):
                     lista[j] = lista[j - interval]
                     j -= interval
                 lista[j] = temp
             interval //= 2
 
     @staticmethod
-    def shellsort_compare(x, y):
+    def compare(x, y):
         if control.cond == "asc":
             return x > y
         
@@ -123,10 +122,10 @@ class control:
         left = 2 * i + 1
         right = 2 * i + 2
 
-        if left < n and lista[left].duracion > lista[largest].duracion:
+        if left < n and control.compare(lista[left].duracion, lista[largest].duracion):
             largest = left
 
-        if right < n and lista[right].duracion > lista[largest].duracion:
+        if right < n and control.compare(lista[right].duracion, lista[largest].duracion):
             largest = right
 
         if largest != i:
@@ -213,12 +212,12 @@ class Reservacion:
         self.salida = fecha(salida)
         self.duracion = calcular_duracion(fecha(entrada),fecha(salida))
 
-        """IF que busca si el nombre del cliente esta en el diccionario, si esta le asigna 1
+        """IF que busca si la cedula del cliente esta en el diccionario, si esta le asigna 1
            si no le suma 1"""
-        if nombre not in Reservacion.re_clientes.keys():
-            Reservacion.re_clientes[nombre] = 1
+        if cedula not in Reservacion.re_clientes.keys():
+            Reservacion.re_clientes[cedula] = 1
         else:
-            Reservacion.re_clientes[nombre] += 1
+            Reservacion.re_clientes[cedula] += 1
 
 def leerArchivo(personas):
     try:
@@ -245,17 +244,18 @@ def imprimir(personas):
         return
     
     linea = ""
-    for i in [8,16,12,12,12,12,16,12,25,17]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
+    for i in [8,16,12,5,12,10,13,18,12,25,17]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
         linea += "+" + "-"*i
     linea += "+"
 
     print(linea)
-    print("| ID     | NOMBRE         | CEDULA     | HABITACION | TIPO       | PRECIO     | N° DE PERSONAS | RESERVA    |     ENTRADA - SALIDA    | DURACION (DIAS) |")
+    print("| ID     | NOMBRE         | CEDULA     | HAB | TIPO       | PRECIO   | N° PERSONAS | N° RESERVACIONES | RESERVA    |     ENTRADA - SALIDA    | DURACION (DIAS) |")
     print(linea)
 
-    cadena = "| {:^6} | {:<15}| {:<10} | {:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>15} |"
+    cadena = "| {:<6} | {:<15}| {:<10} | {:>3} | {:<10} | {:>8} | {:>11} |{:>17} | {:<10} | {:<10} - {:>10} | {:>15} |"
+
     for r in personas:
-        print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
+        print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
     
     print(linea + "\n")
     input("Presione ENTER para continuar ")
@@ -311,12 +311,16 @@ def main(val = True):
         personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
         val = control.val_rta
 
-        print(f"\nDESC: {control.desc}\nCFG: {control.cond}\nRUTA: {control.rta_hotel}\n")
+        if control.cond == "asc": con = "Ascendente"
+        if control.cond == "des": con = "Descendente"
+
+        print(f"\nDESC: {control.desc}\nCFG: {con}\nRUTA: {control.rta_hotel}\n")
 
         opciones = ['Imprimir datos','Selección de Criterios de Ordenamiento', "Ordenamiento Múltiple",
                     'Ordenamiento por rango y precio (MERGESORT)', 
                     "Ordenamiento por numero de reservas (SHELLSORT) ", "Ordenamiento por duracion de estancia (HEAPSORT)",
-                    "Cambiar configuracion","Modificar Configuracion Actual","Crear Configuracion","Cambiar ruta de archivo de configuracion"]
+                    "Cambiar configuracion","Modificar Configuracion Actual","Crear Configuracion",
+                    "Cambiar ruta de archivo de configuracion"]
         
         opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8,9,10])
 
@@ -369,7 +373,6 @@ def main(val = True):
                 print("\nEl valor ingresado no es válido, use el formato dd/mm/AAAA")
 
         if opcion == 5 and val:
-            print("SHELLSORT:\n")
             personas.shellSort(personas.lista, len(personas.lista))
             imprimir(personas.lista)
 
