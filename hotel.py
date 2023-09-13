@@ -113,31 +113,34 @@ class control:
             return x < y
 
     """HEAPSORT"""
-    def heapify(self, lista, n, i):
-        largest = i  
-        l = 2 * i + 1  
-        r = 2 * i + 2  
+    def heapify_two_swap(self,lista, n, i):
+        largest = i
+        left = 2 * i + 1
+        right = 2 * i + 2
 
-        if l < n and lista[i].duracion < lista[l].duracion:
-            largest = l
+        if left < n and lista[left].duracion > lista[largest].duracion:
+            largest = left
 
-        if r < n and lista[largest].duracion < lista[r].duracion:
-            largest = r
-        
+        if right < n and lista[right].duracion > lista[largest].duracion:
+            largest = right
+
         if largest != i:
-            lista[i], lista[largest] = lista[largest], lista[i]  # swap
-            # Heapify the root.
-            self.heapify(lista, n, largest)
+            if largest == left:
+                lista[i], lista[left] = lista[left], lista[i]
+            else:
+                lista[i], lista[right] = lista[right], lista[i]
+                lista[left], lista[right] = lista[right], lista[left]
+            self.heapify_two_swap(lista, n, largest)
 
 
     def heapSort(self, lista):
         n = len(lista)
         for i in range(n // 2 - 1, -1, -1):
-            self.heapify(lista, n, i)
+            self.heapify_two_swap(lista, n, i)
 
         for i in range(n - 1, 0, -1):
             lista[i], lista[0] = lista[0], lista[i]  # swap
-            self.heapify(lista, i, 0)
+            self.heapify_two_swap(lista, i, 0)
             
 """QUICKSORT"""
 def quicksort(lista, inicio, fin, key=lambda x: x.habitacion):
@@ -192,9 +195,10 @@ class Reservacion:
     """Diccionario que guarda el numero de reservaciones que tiene el cliente
        Se accede usando - Reservacion.re_clientes -"""
 
-    def __init__(self,id, nombre, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion):
+    def __init__(self,id, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion):
         self.id = id
         self.nombre = nombre
+        self.cedula = cedula
         self.habitacion = habitacion
         self.tipo = tipo
         self.precio = float(precio)
@@ -215,15 +219,15 @@ def leerArchivo(personas):
     with open(control.rta_hotel,"r", encoding="UTF-8") as archivo:
         lector_csv = csv.reader(archivo,delimiter=";")
         for fila in lector_csv:
-            iden, nombre, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion = fila
+            iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion = fila
             #Las variables se pueden asignar solas, si tiene el mismo numero de datos
 
-            reservacion = Reservacion(iden, nombre, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion)
+            reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion)
             personas.append(reservacion)
     return personas
 
 def imprimir_fecha(fecha):
-    return "{}-{}-{}".format(fecha.year, fecha.month, fecha.day)
+    return "{}-{}-{}".format(fecha.day, fecha.month, fecha.year)
 
 def imprimir(personas):
 
@@ -232,17 +236,17 @@ def imprimir(personas):
         return
     
     linea = ""
-    for i in [8,16,12,12,12,16,12,25,10]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
+    for i in [8,16,12,10,12,12,16,12,25,10]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
         linea += "+" + "-"*i
     linea += "+"
 
     print(linea)
-    print("| ID     | NOMBRE         | HABITACION | TIPO       | PRECIO     | N° DE PERSONAS | RESERVA    |    ENTRADA - SALIDA     | DURACION |")
+    print("| ID     | NOMBRE       |   CEDULA     |  HABITACION |   TIPO     |   PRECIO  |  N° DE PERSONAS | RESERVA    |  ENTRADA - SALIDA  | DURACION |")
     print(linea)
 
-    cadena = "| {:^6} | {:<15}| {:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>8} |"
+    cadena = "| {:^6} | {:<15}|{:^10} |{:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>8} |"
     for r in personas:
-        print(cadena.format(r.id, r.nombre, r.habitacion, r.tipo, str(r.precio), r.num_personas, imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), str(r.duracion))) 
+        print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), calcular_duracion(r.entrada,r.salida))) 
     
     print(linea + "\n")
   
@@ -255,6 +259,12 @@ def fecha(texto):
     fecha = datetime.datetime.strptime(texto, '%d/%m/%Y')
     fecha2 = fecha.date()
     return fecha2
+
+def calcular_duracion(fecha_entrada, fecha_salida):
+    # Convertimos las fechas a objetos datetime
+    diferencia = fecha_salida - fecha_entrada
+    # Devolvemos la duración en días
+    return diferencia.days
 
 def imprimir_r(personas, f1, f2=None):
     lista = []
