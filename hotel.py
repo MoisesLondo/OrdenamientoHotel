@@ -195,7 +195,7 @@ class Reservacion:
     """Diccionario que guarda el numero de reservaciones que tiene el cliente
        Se accede usando - Reservacion.re_clientes -"""
 
-    def __init__(self,id, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion):
+    def __init__(self,id, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida):
         self.id = id
         self.nombre = nombre
         self.cedula = cedula
@@ -206,7 +206,7 @@ class Reservacion:
         self.reserva = fecha(reserva)
         self.entrada = fecha(entrada)
         self.salida = fecha(salida)
-        self.duracion = int(duracion)
+        self.duracion = calcular_duracion(fecha(entrada),fecha(salida))
 
         """IF que busca si el nombre del cliente esta en el diccionario, si esta le asigna 1
            si no le suma 1"""
@@ -219,10 +219,10 @@ def leerArchivo(personas):
     with open(control.rta_hotel,"r", encoding="UTF-8") as archivo:
         lector_csv = csv.reader(archivo,delimiter=";")
         for fila in lector_csv:
-            iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion = fila
+            iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida= fila
             #Las variables se pueden asignar solas, si tiene el mismo numero de datos
 
-            reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, duracion)
+            reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida)
             personas.append(reservacion)
     return personas
 
@@ -246,7 +246,7 @@ def imprimir(personas):
 
     cadena = "| {:^6} | {:<15}|{:^10} |{:^10} | {:<10} | {:>10} | {:>14} | {:<10} | {:<10} - {:>10} | {:>8} |"
     for r in personas:
-        print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), calcular_duracion(r.entrada,r.salida))) 
+        print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
     
     print(linea + "\n")
   
