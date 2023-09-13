@@ -336,33 +336,41 @@ def main(val = True):
             imprimir(personas.lista)
 
         if opcion == 2 and val:
-            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación']
-            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2])
-            f1 = input("Fecha (dd/mm/AAAA): ")
-            fd1 = fecha(f1)
-            if submenu == 1:
-                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
-                imprimir_r(personas.lista,fd1)
-            elif submenu == 2:
-                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
-                imprimir_r(personas.lista,fd1)      
+            try:
+                subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación']
+                submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2])
+                f1 = input("Fecha (dd/mm/AAAA): ")
+                fd1 = fecha(f1)
+                if submenu == 1:
+                    quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
+                    imprimir_r(personas.lista,fd1)
+                elif submenu == 2:
+                    quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
+                    imprimir_r(personas.lista,fd1)
+                else:
+                    print("\nSeleccione una opción valida")  
+            except Exception as e:
+                print("\nEl valor ingresado no es válido")      
     
         if opcion == 3 and val:
-            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
-            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3])
-            f1 = input("Fecha (dd/mm/AAAA): ")
-            fd1 = fecha(f1)
-            if submenu == 1:
-                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
-                imprimir_r(personas.lista,fd1)
-            elif submenu == 2:
-                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
-                imprimir_r(personas.lista,fd1)
-            elif submenu == 3:
-                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.duracion)
-                imprimir_r(personas.lista,fd1)
-            else:
-                print("Ingrese una opción valida")
+            try:
+                subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
+                submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3])
+                f1 = input("Fecha (dd/mm/AAAA): ")
+                fd1 = fecha(f1)
+                if submenu == 1:
+                    quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
+                    imprimir_r(personas.lista,fd1)
+                elif submenu == 2:
+                    quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
+                    imprimir_r(personas.lista,fd1)
+                elif submenu == 3:
+                    quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.duracion)
+                    imprimir_r(personas.lista,fd1)
+                else:
+                    print("\nIngrese una opción valida")
+            except Exception as e:
+                print("\nEl valor ingresado no es válido") 
 
         if opcion == 4 and val:
             try:
