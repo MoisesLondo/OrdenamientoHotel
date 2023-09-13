@@ -195,7 +195,7 @@ def merge(left, right, compare_func):
 
 """"""
 class Reservacion:
-    re_clientes = {} 
+    re_clientes = {}
     """Diccionario que guarda el numero de reservaciones que tiene el cliente
        Se accede usando - Reservacion.re_clientes -"""
 
@@ -223,6 +223,8 @@ def leerArchivo(personas):
     try:
         with open(control.rta_hotel,"r", encoding="UTF-8") as archivo:
             lector_csv = csv.reader(archivo,delimiter=";")
+            Reservacion.re_clientes = {}
+
             for fila in lector_csv:
                 iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida= fila
                 #Las variables se pueden asignar solas, si tiene el mismo numero de datos
