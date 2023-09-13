@@ -330,7 +330,7 @@ def main(val = True):
                     "Cambiar configuracion","Modificar Configuracion Actual","Crear Configuracion",
                     "Cambiar ruta de archivo de configuracion"]
         
-        opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8,9,10])
+        opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,3,2,4,5,6,7,8,9,10])
 
         if opcion == 1 and val:
             imprimir(personas.lista)
