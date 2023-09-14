@@ -2,6 +2,7 @@ import csv
 import datetime
 import os
 lista_errores = []
+lista_acciones = []
 
 def incializar():
     opcion = []
@@ -332,12 +333,13 @@ def main(val = True):
                         'Ordenamiento por rango y precio (MERGESORT)', 
                         "Ordenamiento por numero de reservas (SHELLSORT) ", "Ordenamiento por duracion de estancia (HEAPSORT)",
                         "Cambiar configuracion","Modificar Configuracion Actual","Crear Configuracion",
-                        "Cambiar ruta de archivo de configuracion","Historial de errores"]
+                        "Cambiar ruta de archivo de configuracion","Historial de errores","Historial de acciones"]
             
-            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,3,2,4,5,6,7,8,9,10,11])
+            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,3,2,4,5,6,7,8,9,10,11,12])
 
             if opcion == 1 and val:
                 imprimir(personas.lista)
+                lista_acciones.append([datetime.datetime.now(), "Acción: Se imprimieron los datos"])
 
             if opcion == 2 and val:
                 try:
@@ -348,9 +350,11 @@ def main(val = True):
                     if submenu == 1:
                         quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
                         imprimir_r(personas.lista,fd1)
+                        lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento Múltiple - Fecha de entrada"])
                     elif submenu == 2:
                         quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
                         imprimir_r(personas.lista,fd1)
+                        lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento Múltiple - Habitación"])
                     else:
                         print("\nSeleccione una opción valida")  
                 except Exception as e:
@@ -366,12 +370,15 @@ def main(val = True):
                     if submenu == 1:
                         quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
                         imprimir_r(personas.lista,fd1)
+                        lista_acciones.append([datetime.datetime.now(), "Acción: Selección de Criterios - Fecha de entrada"])
                     elif submenu == 2:
                         quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
                         imprimir_r(personas.lista,fd1)
+                        lista_acciones.append([datetime.datetime.now(), "Acción: Selección de Criterios - Habitación"])
                     elif submenu == 3:
                         quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.duracion)
                         imprimir_r(personas.lista,fd1)
+                        lista_acciones.append([datetime.datetime.now(), "Acción: Selección de Criterios - Duración"])
                     else:
                         print("\nIngrese una opción valida")
                 except Exception as e:
@@ -389,6 +396,7 @@ def main(val = True):
                         print("\n\n")
                         print("En el rango de ",f1, " a ", f2)
                         imprimir_r(sorted,fd1,fd2)
+                        lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento por rango y precio"])
                     else:
                         print("\nRango no válido")
                 except Exception as e:
@@ -398,22 +406,37 @@ def main(val = True):
             if opcion == 5 and val:
                 personas.shellSort(personas.lista, len(personas.lista))
                 imprimir(personas.lista)
+                lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento por número de reservas"])
 
             if opcion == 6 and val:
                 personas.heapSort(personas.lista)
                 imprimir(personas.lista)
+                lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento por duración de estancia"])
 
-            if opcion == 7: incializar()
+            if opcion == 7: 
+                incializar()
+                lista_acciones.append([datetime.datetime.now(), "Acción: Cambiar configuracion"])
 
-            if opcion == 8: modificar()
+            if opcion == 8: 
+                modificar()
+                lista_acciones.append([datetime.datetime.now(), "Acción: Modificar Configuracion Actual"])
 
-            if opcion == 9: crear()
+            if opcion == 9: 
+                crear()
+                lista_acciones.append([datetime.datetime.now(), "Acción: Crear Configuracion"])
 
-            if opcion == 10: main()
+            if opcion == 10: 
+                main()
+                lista_acciones.append([datetime.datetime.now(), "Acción: Cambiar ruta de archivo de configuracion"])
 
             if opcion == 11: 
                 for i in lista_errores:
                     print(i)
+
+            if opcion == 12:
+                for i in lista_acciones:
+                    print(i)
+
     except Exception as e:
         print("\nValor inválido")
         lista_errores.append([datetime.datetime.now(), "Menu", e])            
