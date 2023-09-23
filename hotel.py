@@ -84,6 +84,100 @@ def menu(msg, opciones, valores):
             return(valores[op-1])
         print("Ingrese una opcion valida")
 
+"""Bueno de aqui para abajo va todo lo relacionado a lo que es creacion modificacion y listado de Hoteles y Habitaciones """
+class Hotel:
+    def __init__(self, nombre, num_habitaciones, num_telf,direccion):
+        self.nombre = nombre
+        self.num_telf = num_telf
+        self.num_habitaciones = num_habitaciones
+        self.direccion = direccion
+        self.habitaciones = []
+        self.reservas = []
+
+    def crear_hotel(nombre, num_habitaciones, num_telf,direccion):
+        hotel = Hotel(nombre,num_habitaciones,num_telf,direccion)
+        hotel.append(hotel)
+        return hotel
+    
+    def modificar_hotel(hotel, nombre, num_habitaciones,num_telf,direccion):
+        hotel.nombre = nombre
+        hotel.num_habitaciones = num_habitaciones
+        hotel.num_telf = num_telf
+        hotel.direccion = direccion
+        
+    def listar_hoteles():
+        for hotel in hotel:
+            print(hotel)
+
+    def eliminar_hotel(hotel):
+        hotel.remove(hotel)
+
+class Habitacion:
+    def __init__(self, numero, tipo, disponible):
+        self.numero = numero
+        self.tipo = tipo
+        self.disponible = disponible
+    
+    def crear_habitacion(hotel, numero, tipo):
+        habitacion = Habitacion(numero, tipo, True)
+        hotel.habitaciones.append(habitacion)
+        return habitacion
+
+    def modificar_habitacion(habitacion, numero, tipo, disponible):
+        habitacion.numero = numero
+        habitacion.tipo = tipo
+        habitacion.disponible = disponible
+
+    def listar_habitaciones(hotel):
+        for habitacion in hotel.habitaciones:
+            print(habitacion)
+
+def consultar_habitacion(hotel, numero):
+    for habitacion in hotel.habitaciones:
+        if habitacion.numero == numero:
+            return habitacion
+    return None
+
+def reservar_habitacion(hotel, numero, fecha_inicio, fecha_fin):
+    habitacion = consultar_habitacion(hotel, numero)
+    if habitacion is not None and habitacion.disponible:
+        habitacion.disponible = False
+        habitacion.reservas.append((fecha_inicio, fecha_fin))
+        return True
+    return False
+
+class Reserva:
+    def __init__(self, numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped):
+        self.numero_hotel = numero_hotel
+        self.numero_habitacion = numero_habitacion
+        self.fecha_inicio = fecha_inicio
+        self.fecha_fin = fecha_fin
+        self.nombre_huésped = nombre_huésped
+
+    def agregar_reserva(numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped):
+        reserva = Reserva(numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped)
+        reserva.put(reserva)
+
+    def eliminar_reserva(numero_hotel, numero_habitacion):
+        reserva = buscar_reserva(numero_hotel, numero_habitacion)
+        if reserva is not None:
+            reserva.remove(reserva)
+
+def listar_reservas_por_hotel(numero_hotel):
+    reservas_hotel = []
+    for reserva in reservas_hotel.queue:
+        if reserva.numero_hotel == numero_hotel:
+            reservas_hotel.append(reserva)
+    return reservas_hotel
+
+def buscar_reserva(numero_hotel, numero_habitacion):
+    for reserva in listar_reservas_por_hotel.queue:
+        if reserva.numero_hotel == numero_hotel and reserva.numero_habitacion == numero_habitacion:
+            return reserva
+    return None
+
+"""Aqui termina"""
+
 class control:
     cond = ""
     desc = ""
@@ -300,8 +394,6 @@ def imprimir_r(personas, f1, f2=None):
             if f3 == f1:
                 lista.append(r)
     imprimir(lista)
-
-    """Moi cambie tu vaina para que sea compatible con la funcion de la tabla, igual es una estupidez XD"""
 
 def compare_reservaciones(reservacion1, reservacion2):
     if control.cond == "asc":
