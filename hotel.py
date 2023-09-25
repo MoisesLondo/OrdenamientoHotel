@@ -91,60 +91,66 @@ class Hotel:
         self.num_telf = num_telf
         self.num_habitaciones = num_habitaciones
         self.direccion = direccion
-        self.habitaciones = []
-        self.reservas = []
+        self.siguiente = None
+        self.anterior = None
 
-    def crear_hotel(nombre, num_habitaciones, num_telf,direccion):
-        hotel = Hotel(nombre,num_habitaciones,num_telf,direccion)
-        hotel.append(hotel)
-        return hotel
-    
-    def modificar_hotel(hotel, nombre, num_habitaciones,num_telf,direccion):
-        hotel.nombre = nombre
-        hotel.num_habitaciones = num_habitaciones
-        hotel.num_telf = num_telf
-        hotel.direccion = direccion
-        
-    def listar_hoteles():
-        for hotel in hotel:
-            print(hotel)
+    def agregar_hotel(self, nombre, num_habitaciones, num_telf,direccion):
+        hotel = Hotel(nombre, num_habitaciones, num_telf,direccion)
+        if self.anterior is None:
+            hotel.siguiente = self
+            hotel.anterior = self
+        else:
+            hotel.siguiente = self.siguiente
+            hotel.anterior = self
+            self.siguiente.anterior = hotel
+            self.siguiente = hotel
 
-    def eliminar_hotel(hotel):
-        hotel.remove(hotel)
+    def eliminar_hotel(self):
+        if self.anterior is None and self.siguiente is None:
+            return
+        elif self.anterior is None:
+            self.siguiente.anterior = None
+            return self.siguiente
+        elif self.siguiente is None:
+            self.anterior.siguiente = None
+            return self.anterior
+        else:
+            self.anterior.siguiente = self.siguiente
+            self.siguiente.anterior = self.anterior
+            return self
 
 class Habitacion:
     def __init__(self, numero, tipo, disponible):
         self.numero = numero
         self.tipo = tipo
         self.disponible = disponible
-    
-    def crear_habitacion(hotel, numero, tipo):
-        habitacion = Habitacion(numero, tipo, True)
-        hotel.habitaciones.append(habitacion)
-        return habitacion
+        self.siguiente = None
+        self.anterior = None
 
-    def modificar_habitacion(habitacion, numero, tipo, disponible):
-        habitacion.numero = numero
-        habitacion.tipo = tipo
-        habitacion.disponible = disponible
+    def agregar_habitacion(self, numero, tipo, disponible):
+        habitacion = Habitacion(numero, tipo, disponible)
+        if self.anterior is None:
+            habitacion.siguiente = self
+            habitacion.anterior = self
+        else:
+            habitacion.siguiente = self.siguiente
+            habitacion.anterior = self
+            self.siguiente.anterior = habitacion
+            self.siguiente = habitacion
 
-    def listar_habitaciones(hotel):
-        for habitacion in hotel.habitaciones:
-            print(habitacion)
-
-def consultar_habitacion(hotel, numero):
-    for habitacion in hotel.habitaciones:
-        if habitacion.numero == numero:
-            return habitacion
-    return None
-
-def reservar_habitacion(hotel, numero, fecha_inicio, fecha_fin):
-    habitacion = consultar_habitacion(hotel, numero)
-    if habitacion is not None and habitacion.disponible:
-        habitacion.disponible = False
-        habitacion.reservas.append((fecha_inicio, fecha_fin))
-        return True
-    return False
+    def eliminar_habitacion(self):
+        if self.anterior is None and self.siguiente is None:
+            return
+        elif self.anterior is None:
+            self.siguiente.anterior = None
+            return self.siguiente
+        elif self.siguiente is None:
+            self.anterior.siguiente = None
+            return self.anterior
+        else:
+            self.anterior.siguiente = self.siguiente
+            self.siguiente.anterior = self.anterior
+            return self
 
 class Reserva:
     def __init__(self, numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped):
@@ -153,28 +159,33 @@ class Reserva:
         self.fecha_inicio = fecha_inicio
         self.fecha_fin = fecha_fin
         self.nombre_huésped = nombre_huésped
+        self.siguiente = None
+        self.anterior = None
 
-    def agregar_reserva(numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped):
+    def agregar_reserva(self, numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped):
         reserva = Reserva(numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped)
-        reserva.put(reserva)
+        if self.anterior is None:
+            reserva.siguiente = self
+            reserva.anterior = self
+        else:
+            reserva.siguiente = self.siguiente
+            reserva.anterior = self
+            self.siguiente.anterior = reserva
+            self.siguiente = reserva
 
-    def eliminar_reserva(numero_hotel, numero_habitacion):
-        reserva = buscar_reserva(numero_hotel, numero_habitacion)
-        if reserva is not None:
-            reserva.remove(reserva)
-
-def listar_reservas_por_hotel(numero_hotel):
-    reservas_hotel = []
-    for reserva in reservas_hotel.queue:
-        if reserva.numero_hotel == numero_hotel:
-            reservas_hotel.append(reserva)
-    return reservas_hotel
-
-def buscar_reserva(numero_hotel, numero_habitacion):
-    for reserva in listar_reservas_por_hotel.queue:
-        if reserva.numero_hotel == numero_hotel and reserva.numero_habitacion == numero_habitacion:
-            return reserva
-    return None
+    def eliminar_reserva(self):
+        if self.anterior is None and self.siguiente is None:
+            return
+        elif self.anterior is None:
+            self.siguiente.anterior = None
+            return self.siguiente
+        elif self.siguiente is None:
+            self.anterior.siguiente = None
+            return self.anterior
+        else:
+            self.anterior.siguiente = self.siguiente
+            self.siguiente.anterior = self.anterior
+            return self
 
 """Aqui termina"""
 
