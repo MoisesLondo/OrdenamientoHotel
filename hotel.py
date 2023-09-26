@@ -50,11 +50,24 @@ def modificar():
 
     print("Operacion realizada exitosamente\n")
 
+def modificar2(nombre, campo, valor):
+    with open(control.rta_hoteles, "r") as doc:
+        reader = csv.reader(doc,delimiter=";")
+        datos = list(reader)
+
+    with open(control.rta_hoteles, "w", newline="") as doc:
+        writer = csv.writer(doc, delimiter=";")
+        for hotel in datos:
+            if hotel[0] == nombre:
+                hotel[campo] = valor
+            writer.writerow(hotel)
+
 def crear():
     id = 0
     cfg = menu("Indique en que orden se organizaran los datos",["Ascendente","Descendente"],["asc","des"])
     desc = input("Escriba la nueva descripcion: ")
-    ruta = input("Escriba la nueva ruta del archivo: ")
+    ruta = input("Escriba la nueva ruta del archivo de reservaciones: ")
+    ruta2 = input("Escriba la nueva ruta del archivo de hoteles: ")
 
     with open(control.rta_cfg, "r") as doc:
         reader = csv.reader(doc,delimiter=";")
@@ -63,7 +76,28 @@ def crear():
 
     with open(control.rta_cfg, "a", newline="") as doc:
         writer = csv.writer(doc, delimiter=";")
-        writer.writerow([id, cfg, desc, ruta])
+        writer.writerow([id, cfg, desc, ruta,ruta2])
+
+def crear2(nombre, hab, tel, dir):
+    datos = [nombre, hab, tel, dir]
+    datos.append("")
+    with open(control.rta_hoteles, "r") as doc:
+        reader = csv.reader(doc,delimiter=";")
+
+    with open(control.rta_hoteles, "a", newline="") as doc:
+        writer = csv.writer(doc, delimiter=";")
+        writer.writerow(datos)
+
+def borrar(nombre):
+    with open(control.rta_hoteles, "r") as doc:
+        reader = csv.reader(doc,delimiter=";")
+        datos = list(reader)
+
+    with open(control.rta_hoteles, "w", newline="") as doc:
+        writer = csv.writer(doc, delimiter=";")
+        for hotel in datos:
+            if hotel[0] != nombre:
+                writer.writerow(hotel)
 
 """Funcion que te crea un menu
     le tienen que enviar el mensaje de lo que pide, una lista de las opciones que va a mostrar,
@@ -528,6 +562,7 @@ def main(val = True):
                     direccion = input("Ingrese la dirección del hotel: ")
                     newHotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
                     lista_hoteles.agregar(newHotel)
+                    crear2(nombreHotel,nHabitaciones,nTelefono,direccion)
                     print("\n\nCreado con éxito")
                 if submenu == 2:
                     subopciones2 = ['Nombre', 'Habitacion', 'Teléfono', 'Dirección']
@@ -546,18 +581,14 @@ def main(val = True):
                         nuevo_valor = input("Escriba la nueva dirección del hotel: ")
                         atributo = "direccion"    
                     lista_hoteles.modificar_atributo(nombre, atributo, nuevo_valor)
+                    modificar2(nombre,(submenu2-1),nuevo_valor)
                     print("\n\nModificado con éxito")
                 if submenu == 3: 
                     lista_hoteles.imprimir_hoteles()
                 if submenu == 4:
                     nombre = input("Ingrese el nombre del hotel que quiere eliminar: ")
-                    lista_hoteles.eliminar(nombre)
-
-
-                
-                    
-                       
-                
+                    lista_hoteles.eliminar(nombre)    
+                    borrar(nombre)
 
             if opcion == 12: 
                 for i in lista_errores:
