@@ -16,7 +16,7 @@ def incializar():
 
             op = menu("Seleccione una configuracion:",opcion,valores)
             
-            control.id, control.cond, control.desc, control.rta_hotel = op
+            control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles = op
             control.id = int(control.id)
     except FileNotFoundError as e:
         print("\nNo es encontro el archivo de configuracion, verifique la ruta\n")
@@ -32,19 +32,21 @@ def modificar():
             lista.append(fila)
     
     n = int(control.id) - 1
-    op = menu("Indique que dato desea modificar: ",["Orden", "Descripcion", "Ruta del archivo"],[1,2,3])
+    op = menu("Indique que dato desea modificar: ",["Orden", "Descripcion", "Ruta del archivo de reservaciones", "Ruta del hotel"],[1,2,3,4])
     if op == 1:
         lista[n][1] = menu("Indique en que orden se organizaran los datos",["Ascendente","Descendente"],["asc","des"])
     if op == 2:
         lista[n][2] = input("Escriba la nueva descripcion: ")
     if op == 3:
-        lista[n][3] = input("Escriba la nueva ruta del archivo: ")
+        lista[n][3] = input("Escriba la nueva ruta del archivo de reservaciones: ")
+    if op == 4:
+        lista[n][4] = input("Escriba la nueva ruta del archivo del hotel: ")
 
     with open(control.rta_cfg, "w", newline="") as doc:
         writer = csv.writer(doc, delimiter=";")
         writer.writerows(lista)
 
-    control.id, control.cond, control.desc, control.rta_hotel = lista[n]
+    control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles = lista[n]
 
     print("Operacion realizada exitosamente\n")
 
@@ -122,6 +124,37 @@ class ListaEnlazada:
             hotel = actual.valor
             print(cadena.format(hotel.nombre, hotel.num_habitaciones, hotel.num_telf, hotel.direccion))
             actual = actual.siguiente
+    def buscar_por_nombre(self, nombre):
+        actual = self.cabeza
+        while actual:
+            if actual.valor.nombre == nombre:
+                return actual.valor
+            actual = actual.siguiente
+        return None
+    def modificar_atributo(self, nombre, atributo, nuevo_valor):
+        objeto = self.buscar_por_nombre(nombre)
+        if objeto:  # Si el objeto existe
+            setattr(objeto, atributo, nuevo_valor)
+        else:
+            print(f"No se encontró el hotel {nombre} en la lista.")
+    def eliminar(self, nombre):
+        obj_a_eliminar = self.buscar_por_nombre(nombre)
+        if obj_a_eliminar is None:
+            print(f"No se encontró ningún objeto con el nombre {nombre} en la lista.")
+            return
+        anterior = None
+        actual = self.cabeza
+        while actual:
+            if actual.valor == obj_a_eliminar:
+                if anterior:
+                    anterior.siguiente = actual.siguiente
+                else:
+                    self.cabeza = actual.siguiente
+                self.longitud -= 1
+                print(f"Se eliminó el objeto {str(actual.valor)} de la lista.")
+                return
+            anterior = actual
+            actual = actual.siguiente
 
 """Aqui termina"""
 
@@ -130,6 +163,7 @@ class control:
     desc = ""
     rta_cfg = ""
     rta_hotel = ""
+    rta_hoteles = ""
     val_rta = False
 
     def __init__(self, lista):
@@ -288,6 +322,19 @@ def leerArchivo(personas):
         lista_errores.append([datetime.datetime.now(), "lectura del archivo", e])
         control.val_rta = False
 
+def leerArchivo2(hoteles):
+        with open(control.rta_hoteles,"r", encoding="UTF-8") as archivo:
+            lector_csv = csv.reader(archivo,delimiter=";")
+
+            for fila in lector_csv:
+                nombreHotel, nHabitacion, nTelefono, direccion = fila
+
+                hotel = Hotel(nombreHotel, nHabitacion, nTelefono, direccion)
+                hoteles.agregar(hotel)
+        return hoteles
+
+
+
 def imprimir_fecha(fecha):
     return "{}-{}-{}".format(fecha.day, fecha.month, fecha.year)
 
@@ -355,10 +402,12 @@ def main(val = True):
             control.rta_cfg = str(os.path.abspath(os.getcwd())) + "\config.csv"
         else:
             control.rta_cfg = input("Ingrese la ruta del archivo de configuracion: ")
+        
 
 
         incializar() # CARGA EL ARCHIVO DE CONFIGURACION
         hoteles = ListaEnlazada()
+        lista_hoteles = leerArchivo2(hoteles)
 
         while True:
             personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
@@ -477,11 +526,36 @@ def main(val = True):
                     nHabitaciones = input("Ingrese el número de habitaciones disponibles: ")
                     nTelefono = input("Ingrese el número de teléfono del hotel: ")
                     direccion = input("Ingrese la dirección del hotel: ")
-                    hotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
-                    hoteles.agregar(hotel)
+                    newHotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
+                    lista_hoteles.agregar(newHotel)
                     print("\n\nCreado con éxito")
-                if submenu == 3:
-                    hoteles.imprimir_hoteles()
+                if submenu == 2:
+                    subopciones2 = ['Nombre', 'Habitacion', 'Teléfono', 'Dirección']
+                    submenu2 = menu('SELECCIONES UNA OPCIÓN', subopciones2, [1,2,3,4])
+                    nombre = input("\nEscriba el nombre del hotel: ")
+                    if submenu2 == 1:
+                        nuevo_valor = input("Escriba el nuevo nombre del hotel: ")
+                        atributo = "nombre"
+                    if submenu2 == 2:
+                        nuevo_valor = input("Escriba el nuevo número de habitaciones disponibles del hotel: ")
+                        atributo = "num_habitaciones"
+                    if submenu2 == 3:
+                        nuevo_valor = input("Escriba el nuevo número de teléfono del hotel: ")
+                        atributo = "num_telf"
+                    if submenu2 == 4:
+                        nuevo_valor = input("Escriba la nueva dirección del hotel: ")
+                        atributo = "direccion"    
+                    lista_hoteles.modificar_atributo(nombre, atributo, nuevo_valor)
+                    print("\n\nModificado con éxito")
+                if submenu == 3: 
+                    lista_hoteles.imprimir_hoteles()
+                if submenu == 4:
+                    nombre = input("Ingrese el nombre del hotel que quiere eliminar: ")
+                    lista_hoteles.eliminar(nombre)
+
+
+                
+                    
                        
                 
 

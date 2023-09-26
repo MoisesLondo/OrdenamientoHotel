@@ -1,4 +1,4 @@
-1;asc;EL MEJOR HOTEL;hotel.csv
-2;des;MAMALA;pruebas/hotel2.csv
-2;des;PEPE;hotel.csv
+1;asc;EL MEJOR HOTEL;hotel.csv;hoteles.csv
+2;des;MAMALA;pruebas/hotel2.csv;hoteles.csv
+2;des;PEPE;hotel.csv;hoteles.csv
 3;asc;pepep;xxx
