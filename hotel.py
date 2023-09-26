@@ -85,107 +85,43 @@ def menu(msg, opciones, valores):
         print("Ingrese una opcion valida")
 
 """Bueno de aqui para abajo va todo lo relacionado a lo que es creacion modificacion y listado de Hoteles y Habitaciones """
+class Nodo:
+    def __init__(self,valor=None):
+        self.valor = valor
+        self.siguiente = None
 class Hotel:
     def __init__(self, nombre, num_habitaciones, num_telf,direccion):
         self.nombre = nombre
         self.num_telf = num_telf
         self.num_habitaciones = num_habitaciones
         self.direccion = direccion
-        self.siguiente = None
-        self.anterior = None
-
-    def agregar_hotel(self, nombre, num_habitaciones, num_telf,direccion):
-        hotel = Hotel(nombre, num_habitaciones, num_telf,direccion)
-        if self.anterior is None:
-            hotel.siguiente = self
-            hotel.anterior = self
-        else:
-            hotel.siguiente = self.siguiente
-            hotel.anterior = self
-            self.siguiente.anterior = hotel
-            self.siguiente = hotel
-
-    def eliminar_hotel(self):
-        if self.anterior is None and self.siguiente is None:
-            return
-        elif self.anterior is None:
-            self.siguiente.anterior = None
-            return self.siguiente
-        elif self.siguiente is None:
-            self.anterior.siguiente = None
-            return self.anterior
-        else:
-            self.anterior.siguiente = self.siguiente
-            self.siguiente.anterior = self.anterior
-            return self
-
 class Habitacion:
     def __init__(self, numero, tipo, disponible):
         self.numero = numero
         self.tipo = tipo
         self.disponible = disponible
-        self.siguiente = None
-        self.anterior = None
 
-    def agregar_habitacion(self, numero, tipo, disponible):
-        habitacion = Habitacion(numero, tipo, disponible)
-        if self.anterior is None:
-            habitacion.siguiente = self
-            habitacion.anterior = self
+class ListaEnlazada:
+    def __init__(self):
+        self.cabeza = None
+        self.longitud = 0
+    def agregar(self,valor):
+        nuevo_nodo = Nodo(valor)
+        if self.cabeza is None:
+            self.cabeza = nuevo_nodo
         else:
-            habitacion.siguiente = self.siguiente
-            habitacion.anterior = self
-            self.siguiente.anterior = habitacion
-            self.siguiente = habitacion
-
-    def eliminar_habitacion(self):
-        if self.anterior is None and self.siguiente is None:
-            return
-        elif self.anterior is None:
-            self.siguiente.anterior = None
-            return self.siguiente
-        elif self.siguiente is None:
-            self.anterior.siguiente = None
-            return self.anterior
-        else:
-            self.anterior.siguiente = self.siguiente
-            self.siguiente.anterior = self.anterior
-            return self
-
-class Reserva:
-    def __init__(self, numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped):
-        self.numero_hotel = numero_hotel
-        self.numero_habitacion = numero_habitacion
-        self.fecha_inicio = fecha_inicio
-        self.fecha_fin = fecha_fin
-        self.nombre_huésped = nombre_huésped
-        self.siguiente = None
-        self.anterior = None
-
-    def agregar_reserva(self, numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped):
-        reserva = Reserva(numero_hotel, numero_habitacion, fecha_inicio, fecha_fin, nombre_huésped)
-        if self.anterior is None:
-            reserva.siguiente = self
-            reserva.anterior = self
-        else:
-            reserva.siguiente = self.siguiente
-            reserva.anterior = self
-            self.siguiente.anterior = reserva
-            self.siguiente = reserva
-
-    def eliminar_reserva(self):
-        if self.anterior is None and self.siguiente is None:
-            return
-        elif self.anterior is None:
-            self.siguiente.anterior = None
-            return self.siguiente
-        elif self.siguiente is None:
-            self.anterior.siguiente = None
-            return self.anterior
-        else:
-            self.anterior.siguiente = self.siguiente
-            self.siguiente.anterior = self.anterior
-            return self
+            actual = self.cabeza
+            while actual.siguiente:
+                actual = actual.siguiente
+            actual.siguiente = nuevo_nodo
+    def imprimir_hoteles(self):
+        actual = self.cabeza
+        cadena = "| {:<20} | {:<15} | {:<15} | {:<20} |"
+        print(cadena.format("NOMBRE", "HABITACIONES", "TELÉFONO", "DIRECCIÓN"))
+        while actual:
+            hotel = actual.valor
+            print(cadena.format(hotel.nombre, hotel.num_habitaciones, hotel.num_telf, hotel.direccion))
+            actual = actual.siguiente
 
 """Aqui termina"""
 
@@ -422,6 +358,7 @@ def main(val = True):
 
 
         incializar() # CARGA EL ARCHIVO DE CONFIGURACION
+        hoteles = ListaEnlazada()
 
         while True:
             personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
@@ -436,9 +373,9 @@ def main(val = True):
                         'Ordenamiento por rango y precio (MERGESORT)', 
                         "Ordenamiento por numero de reservas (SHELLSORT) ", "Ordenamiento por duracion de estancia (HEAPSORT)",
                         "Cambiar configuracion","Modificar Configuracion Actual","Crear Configuracion",
-                        "Cambiar ruta de archivo de configuracion","Historial de errores","Historial de acciones"]
+                        "Cambiar ruta de archivo de configuracion","Gestión de Hoteles","Historial de errores","Historial de acciones"]
             
-            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,3,2,4,5,6,7,8,9,10,11,12])
+            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,3,2,4,5,6,7,8,9,10,11,12,13])
 
             if opcion == 1 and val:
                 imprimir(personas.lista)
@@ -531,12 +468,28 @@ def main(val = True):
             if opcion == 10: 
                 main()
                 lista_acciones.append([datetime.datetime.now(), "Acción: Cambiar ruta de archivo de configuracion"])
+            
+            if opcion == 11:
+                subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
+                submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3,4])
+                if submenu == 1:
+                    nombreHotel = input("Ingrese el nombre del hotel: ")
+                    nHabitaciones = input("Ingrese el número de habitaciones disponibles: ")
+                    nTelefono = input("Ingrese el número de teléfono del hotel: ")
+                    direccion = input("Ingrese la dirección del hotel: ")
+                    hotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
+                    hoteles.agregar(hotel)
+                    print("\n\nCreado con éxito")
+                if submenu == 3:
+                    hoteles.imprimir_hoteles()
+                       
+                
 
-            if opcion == 11: 
+            if opcion == 12: 
                 for i in lista_errores:
                     print(i)
 
-            if opcion == 12:
+            if opcion == 13:
                 for i in lista_acciones:
                     print(i)
 
