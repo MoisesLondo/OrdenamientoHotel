@@ -1,1 +1,0 @@
-hoteles = ListaEnlazada()
