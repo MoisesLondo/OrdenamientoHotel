@@ -20,7 +20,7 @@ def incializar():
 
             op = menu("Seleccione una configuracion:",opcion,valores)
             
-            control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles, control.rtahab = op
+            control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles = op
             control.id = int(control.id)
     except FileNotFoundError as e:
         print("\nNo es encontro el archivo de configuracion, verifique la ruta\n")
@@ -50,7 +50,7 @@ def modificar():
         writer = csv.writer(doc, delimiter=";")
         writer.writerows(lista)
 
-    control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles, control.rtahab = lista[n]
+    control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles = lista[n]
 
     print("Operacion realizada exitosamente\n")
 
@@ -252,18 +252,28 @@ class Cola:
             else:
                 self._recorrer_print(self.frente)
 
+    def recorrer_por_hotel(self, hotel):
+        if self.esta_vacia():
+            print("La cola está vacía")
+        else:
+            self._recorrer_print(self.frente, hotel)
+
     def _recorrer_lista(self, nodo):
         if nodo is not None:
             r = nodo.valor
-            control.lista_cola.append([r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, convertir_fecha(r.reserva), convertir_fecha(r.entrada), convertir_fecha(r.salida)])
+            control.lista_cola.append([r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, convertir_fecha(r.reserva), convertir_fecha(r.entrada), convertir_fecha(r.salida), r.hotel])
             self._recorrer_lista(nodo.siguiente)
             
 
-    def _recorrer_print(self, nodo):
+    def _recorrer_print(self, nodo, hotel = None):
         if nodo is not None:
             r = nodo.valor
-            print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
-            self._recorrer_print(nodo.siguiente)
+            if hotel is not None and hotel == r.hotel:
+                print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
+            if hotel is None:
+                print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
+            self._recorrer_print(nodo.siguiente, hotel)
+
 
 class control:
     cond = ""
@@ -393,7 +403,7 @@ class Reservacion:
     """Diccionario que guarda el numero de reservaciones que tiene el cliente
        Se accede usando - Reservacion.re_clientes -"""
 
-    def __init__(self,id, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida):
+    def __init__(self,id, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, hotel):
         self.id = id
         self.nombre = nombre
         self.cedula = cedula
@@ -404,6 +414,7 @@ class Reservacion:
         self.reserva = fecha(reserva)
         self.entrada = fecha(entrada)
         self.salida = fecha(salida)
+        self.hotel = hotel
         self.duracion = calcular_duracion(fecha(entrada),fecha(salida))
 
         """IF que busca si la cedula del cliente esta en el diccionario, si esta le asigna 1
@@ -423,15 +434,13 @@ def leerArchivo(personas, x = False):
             Reservacion.re_clientes = {}
 
             for fila in lector_csv:
-                iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida = fila
+                iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, hotel = fila
                 #Las variables se pueden asignar solas, si tiene el mismo numero de datos
-               
-                
 
-                reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida)
+                reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, hotel)
 
                 personas.append(reservacion)
-                
+
                 if x:
                     control.cola.agregar(reservacion)
 
@@ -526,8 +535,11 @@ def compare_reservaciones(reservacion1, reservacion2):
     elif control.cond == "des":
         return reservacion1.precio > reservacion2.precio
 
+def generar_id():
+    return random.randint(100000,999999)
+
 def main():
-    try:
+    # try:
 
         op = menu("Utilizar la ruta por defecto del archivo de configuracion?",["Si","No"],[True,False])
         if op:
@@ -563,48 +575,62 @@ def main():
 
             """--------------------------------GESTION DE RESERVAS-------------------------"""
             if opcion == 2:
-                subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
+                subopciones = ['Crear', 'Eliminar', 'Listar','Buscar']
                 submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
 
                 if submenu == 1:
-                    nombreHotel = input("Ingrese el nombre del hotel: ")
-                    nHabitaciones = input("Ingrese el número de habitaciones disponibles: ")
-                    nTelefono = input("Ingrese el número de teléfono del hotel: ")
-                    direccion = input("Ingrese la dirección del hotel: ")
-                    newHotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
-                    lista_hoteles.agregar(newHotel)
-                    crear2(nombreHotel,nHabitaciones,nTelefono,direccion)
-                    print("\n\nCreado con éxito")
+                    try:
+                        hotel = input('Diga para que hotel es esta reservacion: ')
+
+                        objeto = lista_hoteles.buscar_por_nombre(hotel)
+                        if objeto:  #1 Si el objeto existe
+                            iden = generar_id()
+                            nombre = input('Ingrese el nombre del cliente: ')
+                            cedula = input('Ingrese la cedula del cliente: ')
+                            habitacion = input('Ingrese la habitacion: ')
+                            tipo = input('Ingrese el tipo de habitacion: ')
+                            precio = input('Ingrese el precio de la habitacion: ')
+                            num_personas = input('Ingrese el numero de personas: ')
+                            reserva = input('Que dia fue la resrvacion? (dd/mm/AAAA):')
+                            fecha(reserva)
+                            entrada = input('Ingrese la fecha de entrada (dd/mm/AAAA):')
+                            fecha(entrada)
+                            salida = input('Ingrese la fecha de salida (dd/mm/AAAA):')
+                            fecha(salida)
+
+                            reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida)
+
+                            control.cola.agregar(reservacion)
+                            print("Operacion Exitosa")
+                        else:
+                            print(f"No se encontró el hotel {hotel} en la lista.")
+
+                    except ValueError:
+                        print('\nPor favor introduzca una fecha valida\n')
+
 
                 if submenu == 2:
-                    subopciones2 = ['Nombre', 'Habitacion', 'Teléfono', 'Dirección']
+                    res = control.cola.ver_frente()
+                    msg = f'Desea la eliminar la reservacion de {res.nombre}, reservado el dia {res.reserva} ?'
 
-                    submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4])
-                    nombre = input("\nEscriba el nombre del hotel: ")
+                    submenu = menu(msg, ['si', 'no'], [True, False])
 
-                    if submenu2 == 1:
-                        nuevo_valor = input("Escriba el nuevo nombre del hotel: ")
-                        atributo = "nombre"
-                    if submenu2 == 2:
-                        nuevo_valor = input("Escriba el nuevo número de habitaciones disponibles del hotel: ")
-                        atributo = "num_habitaciones"
-                    if submenu2 == 3:
-                        nuevo_valor = input("Escriba el nuevo número de teléfono del hotel: ")
-                        atributo = "num_telf"
-                    if submenu2 == 4:
-                        nuevo_valor = input("Escriba la nueva dirección del hotel: ")
-                        atributo = "direccion"    
-                    lista_hoteles.modificar_atributo(nombre, atributo, nuevo_valor)
-                    modificar2(nombre,(submenu2-1),nuevo_valor)
-                    print("\n\nModificado con éxito")
+                    if submenu:
+                        control.cola.eliminar()
+                        print('Operacion realizada exitosamente')
+                    else:
+                        print('Operacion cancelada')
 
-                if submenu == 3: 
-                    lista_hoteles.imprimir_hoteles()
+                if submenu == 3:
+                    hotel = input('Diga para de cual hotel se va a listar las reservaciones: ')
+                    print()
 
-                if submenu == 4:
-                    nombre = input("Ingrese el nombre del hotel que quiere eliminar: ")
-                    lista_hoteles.eliminar(nombre)    
-                    borrar(nombre)
+                    objeto = lista_hoteles.buscar_por_nombre(hotel)
+                    if objeto:  #1 Si el objeto existe
+                        control.cola.recorrer_por_hotel(hotel)
+                    else:
+                        print(f"No se encontró el hotel {hotel} en la lista.")
+
                 
             """--------------------------------GESTION DE HOTELES--------------------------"""
             if opcion == 3:
@@ -773,10 +799,10 @@ def main():
         guardarArchivo1()
 
 
-    except ValueError as e:
-        print("\nValor inválido, introduzca solo numeros/n")
-        lista_errores.append([datetime.datetime.now(), "Menu", e])
-        main()
+    # except ValueError as e:
+    #     print("\nValor inválido, introduzca solo numeros/n")
+    #     lista_errores.append([datetime.datetime.now(), "Menu", e])
+    #     main()
 
 
 main()
