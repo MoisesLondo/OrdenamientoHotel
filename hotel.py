@@ -3,9 +3,63 @@ import datetime
 import os
 import random
 
-lista_errores = []
-lista_acciones = []
 
+class Pila:
+    def __init__(self):
+        self.tope = None
+    
+    def esta_vacia(self):
+        return self.tope is None
+    
+    def agregarPila(self,valor):
+        nodo_nuevo = Nodo(valor)
+        nodo_nuevo.siguiente = self.tope
+        self.tope = nodo_nuevo
+    
+    def recorrerPila(self):
+        if self.esta_vacia():
+            print("La pila está vacía")
+        else:
+            self._recorrer_aux(self.tope)
+    
+    def _recorrer_aux(self,nodo):
+        while nodo:
+            print("|FECHA|: ",nodo.valor.fecha,"|MÓDULO|: ",nodo.valor.modulo,"|ERROR|: ",nodo.valor.tipo)
+            nodo = nodo.siguiente
+    
+    def recorrer2(self):
+        if self.esta_vacia():
+            print("La pila está vacía")
+        else:
+            self.aux2(self.tope)
+    
+    def aux2(self, nodo):
+        while nodo:
+            print("|FECHA| : ", nodo.valor.fecha,"|ACCIÓN| : ",nodo.valor.modulo)
+            nodo = nodo.siguiente
+    
+    def exportar_a_archivo(self, archivo):
+        with open(archivo, 'w', newline='',encoding="UTF-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(['FECHA', 'MÓDULO', 'ERROR'])
+            actual = self.tope
+            while actual:
+                accion = actual.valor
+                writer.writerow([accion.fecha, accion.modulo, accion.tipo])
+                actual = actual.siguiente
+    
+    def exportar_a_archivo2(self, archivo):
+        with open(archivo, 'w', newline='',encoding="UTF-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(['FECHA', 'MÓDULO'])
+            actual = self.tope
+            while actual:
+                accion = actual.valor
+                writer.writerow([accion.fecha, accion.modulo])
+                actual = actual.siguiente
+
+errores = Pila()
+acciones = Pila()
 cadena = "| {:<6} | {:<15}| {:<10} | {:>3} | {:<10} | {:>8} | {:>11} |{:>17} | {:<10} | {:<10} - {:>10} | {:>15} |"
 
 def incializar():
@@ -24,7 +78,7 @@ def incializar():
             control.id = int(control.id)
     except FileNotFoundError as e:
         print("\nNo es encontro el archivo de configuracion, verifique la ruta\n")
-        lista_errores.append([datetime.datetime.now(), "lectura del archivo", e])
+        listarErrores(errores,"Lectura del archivo",e)
         main()
 
 def modificar():
@@ -102,6 +156,10 @@ def borrar(nombre):
         for hotel in datos:
             if hotel[0] != nombre:
                 writer.writerow(hotel)
+def exportar(lista):
+    with open("errores.txt", "w") as exportar:
+            
+            exportar.write(f"{lista_errores}")
 
 """Funcion que te crea un menu
     le tienen que enviar el mensaje de lo que pide, una lista de las opciones que va a mostrar,
@@ -144,6 +202,17 @@ class Habitacion:
         self.numero = numero
         self.tipo = tipo
         self.disponible = disponible
+
+class Error:
+    def __init__(self, fecha, modulo, tipo):
+        self.fecha = fecha
+        self.modulo = modulo
+        self.tipo = tipo
+
+class Acción:
+    def __init__(self,fecha,modulo):
+        self.fecha = fecha
+        self.modulo = modulo
 
 class ListaEnlazada:
     def __init__(self):
@@ -449,7 +518,7 @@ def leerArchivo(personas, x = False):
         
     except FileNotFoundError as e:
         print("No se encontro el archivo del hotel, favor verificar la ruta\n")
-        lista_errores.append([datetime.datetime.now(), "lectura del archivo", e])
+        listarErrores(errores, "Lectura del archivo", e)
         control.val_rta = False
 
 def guardarArchivo1():
@@ -470,6 +539,18 @@ def leerArchivo2(hoteles):
                 hotel = Hotel(nombreHotel, nHabitacion, nTelefono, direccion)
                 hoteles.agregar(hotel)
         return hoteles
+
+def listarErrores(lista, mod, e):
+    fecha = datetime.datetime.now()
+    error = Error(fecha,mod,e)
+    lista.agregarPila(error)
+
+def listarAcciones(lista, mod):
+    fecha =  datetime.datetime.now()
+    accion = Acción(fecha,mod)
+    lista.agregarPila(accion)
+
+
 
 def imprimir_fecha(fecha):
     return "{}-{}-{}".format(fecha.day, fecha.month, fecha.year)
@@ -539,7 +620,7 @@ def generar_id():
     return random.randint(100000,999999)
 
 def main():
-    # try:
+    #try:
 
         op = menu("Utilizar la ruta por defecto del archivo de configuracion?",["Si","No"],[True,False])
         if op:
@@ -550,6 +631,7 @@ def main():
         incializar() # CARGA EL ARCHIVO DE CONFIGURACION
         hoteles = ListaEnlazada()
         lista_hoteles = leerArchivo2(hoteles)
+        
 
         personas = control(leerArchivo([], True))
 
@@ -565,243 +647,258 @@ def main():
             
             opciones = ['Imprimir datos','Gestion de Reservaciones','Gestion de Hoteles', "Gestion de Archivos", 'Algortimos de Ordenamiento',
                         "Historial de errores","Historial de acciones",'Terminar']
-            
             opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8])
-
-            if opcion == 1 and val:
-                imprimir()
-                # imprimir(personas.lista)
-                lista_acciones.append([datetime.datetime.now(), "Acción: Se imprimieron los datos"])
+            try:
+                if opcion == 1 and val:
+                    imprimir()
+                    # imprimir(personas.lista)
+                    listarAcciones(acciones,"Se imprimieron los datos")
+            except Exception as e:
+                print("\nIngrese un valor correcto")
+                listarErrores(errores,"Impresión",e)
 
             """--------------------------------GESTION DE RESERVAS-------------------------"""
-            if opcion == 2:
-                subopciones = ['Crear', 'Eliminar', 'Listar','Buscar']
-                submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
+            try:
+                if opcion == 2:
+                    subopciones = ['Crear', 'Eliminar', 'Listar','Buscar']
+                    submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
 
-                if submenu == 1:
-                    try:
-                        hotel = input('Diga para que hotel es esta reservacion: ')
+                    if submenu == 1:
+                        try:
+                            hotel = input('Diga para que hotel es esta reservacion: ')
+
+                            objeto = lista_hoteles.buscar_por_nombre(hotel)
+                            if objeto:  #1 Si el objeto existe
+                                iden = generar_id()
+                                nombre = input('Ingrese el nombre del cliente: ')
+                                cedula = input('Ingrese la cedula del cliente: ')
+                                habitacion = input('Ingrese la habitacion: ')
+                                tipo = input('Ingrese el tipo de habitacion: ')
+                                precio = input('Ingrese el precio de la habitacion: ')
+                                num_personas = input('Ingrese el numero de personas: ')
+                                reserva = input('Que dia fue la resrvacion? (dd/mm/AAAA):')
+                                fecha(reserva)
+                                entrada = input('Ingrese la fecha de entrada (dd/mm/AAAA):')
+                                fecha(entrada)
+                                salida = input('Ingrese la fecha de salida (dd/mm/AAAA):')
+                                fecha(salida)
+
+                                reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida,hotel)
+
+                                control.cola.agregar(reservacion)
+                                print("Operacion Exitosa")
+                                listarAcciones(acciones,f"Se creó una nueva reserva en el hotel {hotel}")
+                            else:
+                                print(f"No se encontró el hotel {hotel} en la lista.")
+
+                        except ValueError:
+                            print('\nPor favor introduzca una fecha valida\n')
+
+
+                    if submenu == 2:
+                        res = control.cola.ver_frente()
+                        msg = f'Desea la eliminar la reservacion de {res.nombre}, reservado el dia {res.reserva} ?'
+
+                        submenu = menu(msg, ['si', 'no'], [True, False])
+
+                        if submenu:
+                            control.cola.eliminar()
+                            print('Operacion realizada exitosamente')
+                            listarAcciones(acciones,"Se eliminó una reserva")
+                        else:
+                            print('Operacion cancelada')
+
+                    if submenu == 3:
+                        hotel = input('Diga para de cual hotel se va a listar las reservaciones: ')
+                        print()
 
                         objeto = lista_hoteles.buscar_por_nombre(hotel)
                         if objeto:  #1 Si el objeto existe
-                            iden = generar_id()
-                            nombre = input('Ingrese el nombre del cliente: ')
-                            cedula = input('Ingrese la cedula del cliente: ')
-                            habitacion = input('Ingrese la habitacion: ')
-                            tipo = input('Ingrese el tipo de habitacion: ')
-                            precio = input('Ingrese el precio de la habitacion: ')
-                            num_personas = input('Ingrese el numero de personas: ')
-                            reserva = input('Que dia fue la resrvacion? (dd/mm/AAAA):')
-                            fecha(reserva)
-                            entrada = input('Ingrese la fecha de entrada (dd/mm/AAAA):')
-                            fecha(entrada)
-                            salida = input('Ingrese la fecha de salida (dd/mm/AAAA):')
-                            fecha(salida)
-
-                            reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida)
-
-                            control.cola.agregar(reservacion)
-                            print("Operacion Exitosa")
+                            control.cola.recorrer_por_hotel(hotel)
+                            listarAcciones(acciones,f"Se listaron las reservas del hotel {hotel}")
                         else:
                             print(f"No se encontró el hotel {hotel} en la lista.")
-
-                    except ValueError:
-                        print('\nPor favor introduzca una fecha valida\n')
-
-
-                if submenu == 2:
-                    res = control.cola.ver_frente()
-                    msg = f'Desea la eliminar la reservacion de {res.nombre}, reservado el dia {res.reserva} ?'
-
-                    submenu = menu(msg, ['si', 'no'], [True, False])
-
-                    if submenu:
-                        control.cola.eliminar()
-                        print('Operacion realizada exitosamente')
-                    else:
-                        print('Operacion cancelada')
-
-                if submenu == 3:
-                    hotel = input('Diga para de cual hotel se va a listar las reservaciones: ')
-                    print()
-
-                    objeto = lista_hoteles.buscar_por_nombre(hotel)
-                    if objeto:  #1 Si el objeto existe
-                        control.cola.recorrer_por_hotel(hotel)
-                    else:
-                        print(f"No se encontró el hotel {hotel} en la lista.")
+            except Exception as e:
+                print("\nIngrese un valor correcto")
+                listarErrores(errores,"Gestión de reserva", e)
 
                 
             """--------------------------------GESTION DE HOTELES--------------------------"""
-            if opcion == 3:
-                subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
-                submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
+            try:
+                if opcion == 3:
+                    subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
+                    submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
 
-                if submenu == 1:
-                    nombreHotel = input("Ingrese el nombre del hotel: ")
-                    nHabitaciones = input("Ingrese el número de habitaciones disponibles: ")
-                    nTelefono = input("Ingrese el número de teléfono del hotel: ")
-                    direccion = input("Ingrese la dirección del hotel: ")
-                    newHotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
-                    lista_hoteles.agregar(newHotel)
-                    crear2(nombreHotel,nHabitaciones,nTelefono,direccion)
-                    print("\n\nCreado con éxito")
+                    if submenu == 1:
+                        nombreHotel = input("Ingrese el nombre del hotel: ")
+                        nHabitaciones = input("Ingrese el número de habitaciones disponibles: ")
+                        nTelefono = input("Ingrese el número de teléfono del hotel: ")
+                        direccion = input("Ingrese la dirección del hotel: ")
+                        newHotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
+                        lista_hoteles.agregar(newHotel)
+                        crear2(nombreHotel,nHabitaciones,nTelefono,direccion)
+                        print("\n\nCreado con éxito")
+                        listarAcciones(acciones,f"Se creo el hotel {nombreHotel}")
 
-                if submenu == 2:
-                    subopciones2 = ['Nombre', 'Habitacion', 'Teléfono', 'Dirección']
+                    if submenu == 2:
+                        subopciones2 = ['Nombre', 'Habitacion', 'Teléfono', 'Dirección']
 
-                    submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4])
-                    nombre = input("\nEscriba el nombre del hotel: ")
+                        submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4])
+                        nombre = input("\nEscriba el nombre del hotel: ")
 
-                    if submenu2 == 1:
-                        nuevo_valor = input("Escriba el nuevo nombre del hotel: ")
-                        atributo = "nombre"
-                    if submenu2 == 2:
-                        nuevo_valor = input("Escriba el nuevo número de habitaciones disponibles del hotel: ")
-                        atributo = "num_habitaciones"
-                    if submenu2 == 3:
-                        nuevo_valor = input("Escriba el nuevo número de teléfono del hotel: ")
-                        atributo = "num_telf"
-                    if submenu2 == 4:
-                        nuevo_valor = input("Escriba la nueva dirección del hotel: ")
-                        atributo = "direccion"    
-                    lista_hoteles.modificar_atributo(nombre, atributo, nuevo_valor)
-                    modificar2(nombre,(submenu2-1),nuevo_valor)
-                    print("\n\nModificado con éxito")
+                        if submenu2 == 1:
+                            nuevo_valor = input("Escriba el nuevo nombre del hotel: ")
+                            atributo = "nombre"
+                        if submenu2 == 2:
+                            nuevo_valor = input("Escriba el nuevo número de habitaciones disponibles del hotel: ")
+                            atributo = "num_habitaciones"
+                        if submenu2 == 3:
+                            nuevo_valor = input("Escriba el nuevo número de teléfono del hotel: ")
+                            atributo = "num_telf"
+                        if submenu2 == 4:
+                            nuevo_valor = input("Escriba la nueva dirección del hotel: ")
+                            atributo = "direccion"    
+                        lista_hoteles.modificar_atributo(nombre, atributo, nuevo_valor)
+                        modificar2(nombre,(submenu2-1),nuevo_valor)
+                        print("\n\nModificado con éxito")
+                        listarAcciones(acciones,f"Se modificó un atributo del hotel {nombre}")
 
-                if submenu == 3: 
-                    lista_hoteles.imprimir_hoteles()
+                    if submenu == 3: 
+                        lista_hoteles.imprimir_hoteles()
+                        listarAcciones(acciones,"Se imprimió la lista de hoteles")
 
-                if submenu == 4:
-                    nombre = input("Ingrese el nombre del hotel que quiere eliminar: ")
-                    lista_hoteles.eliminar(nombre)    
-                    borrar(nombre)
+                    if submenu == 4:
+                        nombre = input("Ingrese el nombre del hotel que quiere eliminar: ")
+                        lista_hoteles.eliminar(nombre)    
+                        borrar(nombre)
+                        listarAcciones(acciones,f"Se eliminó el hotel {nombre}")
+            except Exception as e:
+                print("\nIngrese un valor correcto")
+                listarErrores(errores, "Gestión de hoteles", e)
 
 
             """"---------------------------------GESTION DE ARCHIVOS DE CONFIGURACION-----------------------------------"""
-            if opcion == 4:
-                opcion = menu('ELIGA UNA OPCION: ', ['Cambiar','Modificar','Crear','Cambiar ruta'], [1,2,3,4])
+            try:
+                if opcion == 4:
+                    opcion = menu('ELIGA UNA OPCION: ', ['Cambiar','Modificar','Crear','Cambiar ruta'], [1,2,3,4])
 
-                if opcion == 1: 
-                    incializar()
-                    lista_acciones.append([datetime.datetime.now(), "Acción: Cambiar configuracion"])
+                    if opcion == 1: 
+                        incializar()
+                        listarAcciones(acciones, "Cambiar configuración")
 
-                if opcion == 2: 
-                    modificar()
-                    lista_acciones.append([datetime.datetime.now(), "Acción: Modificar Configuracion Actual"])
+                    if opcion == 2: 
+                        modificar()
+                        listarAcciones(acciones, "Se modificó la configuración")
 
-                if opcion == 3: 
-                    crear()
-                    lista_acciones.append([datetime.datetime.now(), "Acción: Crear Configuracion"])
+                    if opcion == 3: 
+                        crear()
+                        listarAcciones(acciones, "Se creó la configuración")
 
-                if opcion == 4: 
-                    main()
-                    lista_acciones.append([datetime.datetime.now(), "Acción: Cambiar ruta de archivo de configuracion"])
+                    if opcion == 4: 
+                        main()
+                        listarAcciones(acciones, "Cambiar ruta de archivo de configuracion")
+            except Exception as e:
+                print("\nIngrese un valor correcto")
+                listarErrores(errores, "Configuración de archivos", e)
 
 
             """-------------------ALGORTIMOS DE ORDENAMIENTO---------------------"""
-            if opcion == 5 and val:
-
-                subopciones = ['Selección de Criterios de Ordenamiento', "Ordenamiento Múltiple",
-                        'Ordenamiento por rango y precio (MERGESORT)', 
-                        "Ordenamiento por numero de reservas (SHELLSORT) ", "Ordenamiento por duracion de estancia (HEAPSORT)"]
-                
-                opcion = menu('Que Algoritmo desea utilizar?', subopciones, [1,2,3,4,5])
-
-                if opcion == 1 and val:
-                    try:
-                        subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación']
-                        submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2])
-                        f1 = input("Fecha (dd/mm/AAAA): ")
-                        fd1 = fecha(f1)
-                        if submenu == 1:
-                            quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
-                            imprimir_r(personas.lista,fd1)
-                            lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento Múltiple - Fecha de entrada"])
-                        elif submenu == 2:
-                            quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
-                            imprimir_r(personas.lista,fd1)
-                            lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento Múltiple - Habitación"])
-                        else:
-                            print("\nSeleccione una opción valida")  
-                    except Exception as e:
-                        print("\nEl valor ingresado no es válido")
-                        lista_errores.append([datetime.datetime.now(), "Ordenamiento Múltiple", e])      
-            
-                if opcion == 2 and val:
-                    try:
-                        subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
-                        submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3])
-                        f1 = input("Fecha (dd/mm/AAAA): ")
-                        fd1 = fecha(f1)
-                        if submenu == 1:
-                            quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
-                            imprimir_r(personas.lista,fd1)
-                            lista_acciones.append([datetime.datetime.now(), "Acción: Selección de Criterios - Fecha de entrada"])
-                        elif submenu == 2:
-                            quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
-                            imprimir_r(personas.lista,fd1)
-                            lista_acciones.append([datetime.datetime.now(), "Acción: Selección de Criterios - Habitación"])
-                        elif submenu == 3:
-                            quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.duracion)
-                            imprimir_r(personas.lista,fd1)
-                            lista_acciones.append([datetime.datetime.now(), "Acción: Selección de Criterios - Duración"])
-                        else:
-                            print("\nIngrese una opción valida")
-                    except Exception as e:
-                        print("\nEl valor ingresado no es válido")
-                        lista_errores.append([datetime.datetime.now(), "Criterios de Ordenamiento", e]) 
-
-                if opcion == 3 and val:
-                    try:
-                        f1 = input("Rango inferior (dd/mm/AAAA): ")
-                        f2 = input("Rango superior (dd/mm/AAAA): ")
-                        fd1 = fecha(f1)
-                        fd2 = fecha(f2)
-                        if fd2 > fd1:
-                            sorted = merge_sort(personas.lista,compare_reservaciones)
-                            print("\n\n")
-                            print("En el rango de ",f1, " a ", f2)
-                            imprimir_r(sorted,fd1,fd2)
-                            lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento por rango y precio"])
-                        else:
-                            print("\nRango no válido")
-                    except Exception as e:
-                        print("\nEl valor ingresado no es válido, use el formato dd/mm/AAAA")
-                        lista_errores.append([datetime.datetime.now(), "Ordenamiento por rango y precio", e])
-                        
-                if opcion == 4 and val:
-                    personas.shellSort(personas.lista, len(personas.lista))
-                    imprimir(personas.lista)
-                    lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento por número de reservas"])
-
+            try:
                 if opcion == 5 and val:
-                    personas.heapSort(personas.lista)
-                    imprimir(personas.lista)
-                    lista_acciones.append([datetime.datetime.now(), "Acción: Ordenamiento por duración de estancia"])
+                    subopciones = ['Selección de Criterios de Ordenamiento', "Ordenamiento Múltiple",
+                            'Ordenamiento por rango y precio (MERGESORT)', 
+                            "Ordenamiento por numero de reservas (SHELLSORT) ", "Ordenamiento por duracion de estancia (HEAPSORT)"]
+                    
+                    opcion = menu('Que Algoritmo desea utilizar?', subopciones, [1,2,3,4,5])
+
+                    if opcion == 1 and val:
+                            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación']
+                            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2])
+                            f1 = input("Fecha (dd/mm/AAAA): ")
+                            fd1 = fecha(f1)
+                            if submenu == 1:
+                                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
+                                imprimir_r(personas.lista,fd1)
+                                listarAcciones(acciones, "Ordenamiento múltiple - Fecha de entrada")
+                            elif submenu == 2:
+                                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
+                                imprimir_r(personas.lista,fd1)
+                                listarAcciones(acciones, "Ordenamiento múltiple - Habitación")
+                            else:
+                                print("\nSeleccione una opción valida")  
+        
+                
+                    if opcion == 2 and val:
+                            subopciones = ['Ordenar por fecha de entrada', 'Ordenar por habitación', 'Ordenar por duración de la estadía']
+                            submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3])
+                            f1 = input("Fecha (dd/mm/AAAA): ")
+                            fd1 = fecha(f1)
+                            if submenu == 1:
+                                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.entrada)
+                                imprimir_r(personas.lista,fd1)
+                                listarAcciones(acciones, "Selección de criterios - Fecha de entrada")
+                            elif submenu == 2:
+                                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.habitacion)
+                                imprimir_r(personas.lista,fd1)
+                                listarAcciones(acciones, "Selección de criterios - Habitación")
+                            elif submenu == 3:
+                                quicksort(personas.lista, 0, len(personas.lista)-1, key=lambda x: x.duracion)
+                                imprimir_r(personas.lista,fd1)
+                                listarAcciones(acciones, "Selección de criterios - Duración")
+                            else:
+                                print("\nIngrese una opción valida") 
+
+                    if opcion == 3 and val:
+                            f1 = input("Rango inferior (dd/mm/AAAA): ")
+                            f2 = input("Rango superior (dd/mm/AAAA): ")
+                            fd1 = fecha(f1)
+                            fd2 = fecha(f2)
+                            if fd2 > fd1:
+                                sorted = merge_sort(personas.lista,compare_reservaciones)
+                                print("\n\n")
+                                print("En el rango de ",f1, " a ", f2)
+                                imprimir_r(sorted,fd1,fd2)
+                                listarAcciones(acciones, "Ordenamiento por rango y precio")
+                            else:
+                                print("\nRango no válido")
+                            print("\nEl valor ingresado no es válido, use el formato dd/mm/AAAA")
+                            
+                    if opcion == 4 and val:
+                        personas.shellSort(personas.lista, len(personas.lista))
+                        imprimir(personas.lista)
+                        listarAcciones(acciones, "Ordenamiento por número de reservas")
+
+                    if opcion == 5 and val:
+                        personas.heapSort(personas.lista)
+                        imprimir(personas.lista)
+                        listarAcciones(acciones, "Ordenamiento por duración de estancia")
+            except Exception as e:
+                print("\nIngrese un valor correcto")
+                listarErrores(errores,"Algoritmos de ordenamiento", e)  
 
             """----------------------LISTADO---------------------"""
             if opcion == 6: 
-                for i in lista_errores:
-                    print(i)
+                errores.recorrerPila()
+                errores.exportar_a_archivo("errores.csv")
+                listarAcciones(acciones, "Listado de errores")
 
             if opcion == 7:
-                for i in lista_acciones:
-                    print(i)
+                acciones.recorrer2()
+                acciones.exportar_a_archivo2("acciones.csv")
 
             if opcion == 8:
                 print("Sesion Terminada")
                 break
 
             personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
-        
         """se sobreescribe el archivo hotel.csv"""
         guardarArchivo1()
 
 
-    # except ValueError as e:
-    #     print("\nValor inválido, introduzca solo numeros/n")
-    #     lista_errores.append([datetime.datetime.now(), "Menu", e])
+    #except ValueError as e:
+        print("\nValor inválido, introduzca solo numeros")
+        #lista_errores.append([datetime.datetime.now(), "Menu", e])
+        listarErrores(errores,"Menu",e)
     #     main()
 
 
