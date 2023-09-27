@@ -156,6 +156,7 @@ def borrar(nombre):
         for hotel in datos:
             if hotel[0] != nombre:
                 writer.writerow(hotel)
+
 def exportar(lista):
     with open("errores.txt", "w") as exportar:
             
@@ -319,29 +320,44 @@ class Cola:
             if x:
                 self._recorrer_lista(self.frente)
             else:
+                linea = header()
+
                 self._recorrer_print(self.frente)
 
-    def recorrer_por_hotel(self, hotel):
-        if self.esta_vacia():
-            print("La cola está vacía")
-        else:
-            self._recorrer_print(self.frente, hotel)
-
+                print(linea + "\n")
+    
     def _recorrer_lista(self, nodo):
         if nodo is not None:
             r = nodo.valor
             control.lista_cola.append([r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, convertir_fecha(r.reserva), convertir_fecha(r.entrada), convertir_fecha(r.salida), r.hotel])
             self._recorrer_lista(nodo.siguiente)
-            
 
-    def _recorrer_print(self, nodo, hotel = None):
+    def _recorrer_print(self, nodo):
         if nodo is not None:
             r = nodo.valor
-            if hotel is not None and hotel == r.hotel:
-                print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
-            if hotel is None:
-                print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
-            self._recorrer_print(nodo.siguiente, hotel)
+            print_cadena(r)
+            self._recorrer_print(nodo.siguiente)
+
+    def recorrer_por_parametro(self, param, key):
+        if self.esta_vacia():
+            print("La cola está vacía")
+        else:
+            linea = header()
+
+            self._recorrer_parametro_auxiliar(self.frente, param, key)
+
+            print(linea + "\n")
+            input("Presione ENTER para continuar ")
+    
+    def _recorrer_parametro_auxiliar(self, nodo, param, key):
+        if nodo is not None:
+            r = nodo.valor
+            if param == key(r):
+                print_cadena(r)
+            self._recorrer_parametro_auxiliar(nodo.siguiente, param, key)
+
+def print_cadena(r):
+    print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
 
 
 class control:
@@ -555,27 +571,34 @@ def listarAcciones(lista, mod):
 def imprimir_fecha(fecha):
     return "{}-{}-{}".format(fecha.day, fecha.month, fecha.year)
 
-def imprimir(personas = None):
-    if control.cola.esta_vacia():
-        print("NO HAY DATOS QUE MOSTRAR\n") 
-        return
-    
+def header(x = False):
     linea = ""
     for i in [8,16,12,5,12,10,13,18,12,25,17]: # LOS ELEMENTOS DE LA LISTA SON LAS LONGUITUDES
         linea += "+" + "-"*i
     linea += "+"
 
+    if x:
+        return linea
+
     print(linea)
     print("| ID     | NOMBRE         | CEDULA     | HAB | TIPO       | PRECIO   | N° PERSONAS | N° RESERVACIONES | RESERVA    |     ENTRADA - SALIDA    | DURACION (DIAS) |")
     print(linea)
-    
+
+    return linea
+
+def imprimir(personas = None):
+    if control.cola.esta_vacia():
+        print("NO HAY DATOS QUE MOSTRAR\n") 
+        return
+
     if personas == None:
+        linea = header(True)
         control.cola.recorrer()
     else:
+        linea = header()
         for r in personas:
             print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
-
-    print(linea + "\n")
+        print(linea + "\n")
     input("Presione ENTER para continuar ")
     print()
   
@@ -620,7 +643,7 @@ def generar_id():
     return random.randint(100000,999999)
 
 def main():
-    #try:
+    try:
 
         op = menu("Utilizar la ruta por defecto del archivo de configuracion?",["Si","No"],[True,False])
         if op:
@@ -683,7 +706,7 @@ def main():
                                 salida = input('Ingrese la fecha de salida (dd/mm/AAAA):')
                                 fecha(salida)
 
-                                reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida,hotel)
+                                reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, hotel)
 
                                 control.cola.agregar(reservacion)
                                 print("Operacion Exitosa")
@@ -691,8 +714,9 @@ def main():
                             else:
                                 print(f"No se encontró el hotel {hotel} en la lista.")
 
-                        except ValueError:
+                        except ValueError as e:
                             print('\nPor favor introduzca una fecha valida\n')
+                            listarErrores(errores,"Gestión de reserva", e)
 
 
                     if submenu == 2:
@@ -714,14 +738,36 @@ def main():
 
                         objeto = lista_hoteles.buscar_por_nombre(hotel)
                         if objeto:  #1 Si el objeto existe
-                            control.cola.recorrer_por_hotel(hotel)
-                            listarAcciones(acciones,f"Se listaron las reservas del hotel {hotel}")
+                            control.cola.recorrer_por_parametro(hotel, key=lambda x: x.hotel)
                         else:
                             print(f"No se encontró el hotel {hotel} en la lista.")
+                    
+                    try:
+                        if submenu == 4:
+                            subopcion = menu('Por cual parametro desea buscar?',['Nombre','Cedula','Habitacion',
+                                            'Tipo de Habitacion','Precio','Numero de Personas','Fecha de Reserva','Fecha de Entrada','Fecha de Salida'], [1,2,3,4,5,6,7,8,9])
+                            
+                            param = input('Diga el valor a buscar\n > ')
+
+                            if subopcion == 5: param = int(param)                            
+                            if subopcion in [7,8,9]: param = fecha(param)
+
+                            if subopcion == 1: control.cola.recorrer_por_parametro(param, key=lambda x: x.nombre)
+                            if subopcion == 2: control.cola.recorrer_por_parametro(param, key=lambda x: x.cedula)
+                            if subopcion == 3: control.cola.recorrer_por_parametro(param, key=lambda x: x.habitacion)
+                            if subopcion == 4: control.cola.recorrer_por_parametro(param, key=lambda x: x.tipo)
+                            if subopcion == 5: control.cola.recorrer_por_parametro(param, key=lambda x: x.precio)
+                            if subopcion == 6: control.cola.recorrer_por_parametro(param, key=lambda x: x.num_personas)
+                            if subopcion == 7: control.cola.recorrer_por_parametro(param, key=lambda x: x.reserva)
+                            if subopcion == 8: control.cola.recorrer_por_parametro(param, key=lambda x: x.entrada)
+                            if subopcion == 9: control.cola.recorrer_por_parametro(param, key=lambda x: x.salida)
+                    except ValueError as e:
+                            print('\nPor favor introduzca un dato valido\n')
+                            listarErrores(errores,"Gestión de reserva", e)
+
             except Exception as e:
                 print("\nIngrese un valor correcto")
                 listarErrores(errores,"Gestión de reserva", e)
-
                 
             """--------------------------------GESTION DE HOTELES--------------------------"""
             try:
@@ -872,6 +918,7 @@ def main():
                         personas.heapSort(personas.lista)
                         imprimir(personas.lista)
                         listarAcciones(acciones, "Ordenamiento por duración de estancia")
+
             except Exception as e:
                 print("\nIngrese un valor correcto")
                 listarErrores(errores,"Algoritmos de ordenamiento", e)  
@@ -895,11 +942,11 @@ def main():
         guardarArchivo1()
 
 
-    #except ValueError as e:
+    except ValueError as e:
         print("\nValor inválido, introduzca solo numeros")
-        #lista_errores.append([datetime.datetime.now(), "Menu", e])
+        lista_errores.append([datetime.datetime.now(), "Menu", e])
         listarErrores(errores,"Menu",e)
-    #     main()
+        main()
 
 
 main()
