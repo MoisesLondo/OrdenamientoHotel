@@ -6,6 +6,8 @@ import random
 lista_errores = []
 lista_acciones = []
 
+cadena = "| {:<6} | {:<15}| {:<10} | {:>3} | {:<10} | {:>8} | {:>11} |{:>17} | {:<10} | {:<10} - {:>10} | {:>15} |"
+
 def incializar():
     opcion = []
     valores = []
@@ -241,18 +243,27 @@ class Cola:
         else:
             return self.frente.valor
         
-    def recorrer(self):
+    def recorrer(self, x = False):
         if self.esta_vacia():
             print("La cola está vacía")
         else:
-            self._recorrer_aux(self.frente)
+            if x:
+                self._recorrer_lista(self.frente)
+            else:
+                self._recorrer_print(self.frente)
 
-    def _recorrer_aux(self, nodo):
+    def _recorrer_lista(self, nodo):
         if nodo is not None:
             r = nodo.valor
-            cadena = "| {:<6} | {:<15}| {:<10} | {:>3} | {:<10} | {:>8} | {:>11} |{:>17} | {:<10} | {:<10} - {:>10} | {:>15} |"
+            control.lista_cola.append([r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas, convertir_fecha(r.reserva), convertir_fecha(r.entrada), convertir_fecha(r.salida)])
+            self._recorrer_lista(nodo.siguiente)
+            
+
+    def _recorrer_print(self, nodo):
+        if nodo is not None:
+            r = nodo.valor
             print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
-            self._recorrer_aux(nodo.siguiente)
+            self._recorrer_print(nodo.siguiente)
 
 class control:
     cond = ""
@@ -263,6 +274,7 @@ class control:
     val_rta = False
     
     cola = Cola()
+    lista_cola = []
 
     def __init__(self, lista):
         self.lista = lista
@@ -401,21 +413,28 @@ class Reservacion:
         else:
             Reservacion.re_clientes[cedula] += 1
 
-def leerArchivo(personas):
+def leerArchivo(personas, x = False):
     try:
-        control.cola = Cola()
+        if x:
+            control.cola = Cola()
         
         with open(control.rta_hotel,"r", encoding="UTF-8") as archivo:
             lector_csv = csv.reader(archivo,delimiter=";")
             Reservacion.re_clientes = {}
 
             for fila in lector_csv:
-                iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida= fila
+                iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida = fila
                 #Las variables se pueden asignar solas, si tiene el mismo numero de datos
+               
+                
 
                 reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida)
+
                 personas.append(reservacion)
-                control.cola.agregar(reservacion)
+                
+                if x:
+                    control.cola.agregar(reservacion)
+
         control.val_rta = True
         return personas
         
@@ -425,7 +444,12 @@ def leerArchivo(personas):
         control.val_rta = False
 
 def guardarArchivo1():
-    pass
+
+    control.cola.recorrer(True)
+
+    with open(control.rta_hotel, "w", newline="", encoding="UTF-8") as doc:
+        writer = csv.writer(doc, delimiter=";")
+        writer.writerows(control.lista_cola)
 
 def leerArchivo2(hoteles):
         with open(control.rta_hoteles,"r", encoding="UTF-8") as archivo:
@@ -441,8 +465,8 @@ def leerArchivo2(hoteles):
 def imprimir_fecha(fecha):
     return "{}-{}-{}".format(fecha.day, fecha.month, fecha.year)
 
-def imprimir(personas):
-    if len (personas) == 0:
+def imprimir(personas = None):
+    if control.cola.esta_vacia():
         print("NO HAY DATOS QUE MOSTRAR\n") 
         return
     
@@ -455,6 +479,12 @@ def imprimir(personas):
     print("| ID     | NOMBRE         | CEDULA     | HAB | TIPO       | PRECIO   | N° PERSONAS | N° RESERVACIONES | RESERVA    |     ENTRADA - SALIDA    | DURACION (DIAS) |")
     print(linea)
     
+    if personas == None:
+        control.cola.recorrer()
+    else:
+        for r in personas:
+            print(cadena.format(r.id, r.nombre, r.cedula, r.habitacion, r.tipo, str(r.precio), r.num_personas,Reservacion.re_clientes[r.cedula], imprimir_fecha(r.reserva), imprimir_fecha(r.entrada), imprimir_fecha(r.salida), r.duracion)) 
+
     print(linea + "\n")
     input("Presione ENTER para continuar ")
     print()
@@ -474,6 +504,9 @@ def calcular_duracion(fecha_entrada, fecha_salida):
     diferencia = fecha_salida - fecha_entrada
     # Devolvemos la duración en días
     return diferencia.days
+
+def convertir_fecha(fecha):
+    return "{}/{}/{}".format(fecha.day, fecha.month, fecha.year)
 
 def imprimir_r(personas, f1, f2=None):
     lista = []
@@ -506,8 +539,10 @@ def main():
         hoteles = ListaEnlazada()
         lista_hoteles = leerArchivo2(hoteles)
 
+        personas = control(leerArchivo([], True))
+
         while True:
-            personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
+
             val = control.val_rta
 
             if control.cond == "asc": con = "Ascendente"
@@ -522,7 +557,8 @@ def main():
             opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8])
 
             if opcion == 1 and val:
-                imprimir(personas.lista)
+                imprimir()
+                # imprimir(personas.lista)
                 lista_acciones.append([datetime.datetime.now(), "Acción: Se imprimieron los datos"])
 
             """--------------------------------GESTION DE RESERVAS-------------------------"""
@@ -569,6 +605,7 @@ def main():
                     nombre = input("Ingrese el nombre del hotel que quiere eliminar: ")
                     lista_hoteles.eliminar(nombre)    
                     borrar(nombre)
+                
             """--------------------------------GESTION DE HOTELES--------------------------"""
             if opcion == 3:
                 subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
@@ -729,6 +766,8 @@ def main():
             if opcion == 8:
                 print("Sesion Terminada")
                 break
+
+            personas = control(leerArchivo([])) # Lo pongo aqui para que se actualize la re despues de cada operacion
         
         """se sobreescribe el archivo hotel.csv"""
         guardarArchivo1()
