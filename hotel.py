@@ -39,7 +39,7 @@ class Pila:
             nodo = nodo.siguiente
     
     def exportar_a_archivo(self, archivo):
-        with open(archivo, 'w', newline='',encoding="UTF-8") as file:
+        with open(archivo, 'a', newline='',encoding="UTF-8") as file:
             writer = csv.writer(file)
             writer.writerow(['FECHA', 'MÓDULO', 'ERROR'])
             actual = self.tope
@@ -49,7 +49,7 @@ class Pila:
                 actual = actual.siguiente
     
     def exportar_a_archivo2(self, archivo):
-        with open(archivo, 'w', newline='',encoding="UTF-8") as file:
+        with open(archivo, 'a', newline='',encoding="UTF-8") as file:
             writer = csv.writer(file)
             writer.writerow(['FECHA', 'MÓDULO'])
             actual = self.tope
