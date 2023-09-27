@@ -1,6 +1,7 @@
 import csv
 import datetime
 import os
+import random
 
 lista_errores = []
 lista_acciones = []
@@ -17,7 +18,7 @@ def incializar():
 
             op = menu("Seleccione una configuracion:",opcion,valores)
             
-            control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles = op
+            control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles, control.rtahab = op
             control.id = int(control.id)
     except FileNotFoundError as e:
         print("\nNo es encontro el archivo de configuracion, verifique la ruta\n")
@@ -47,7 +48,7 @@ def modificar():
         writer = csv.writer(doc, delimiter=";")
         writer.writerows(lista)
 
-    control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles = lista[n]
+    control.id, control.cond, control.desc, control.rta_hotel, control.rta_hoteles, control.rtahab = lista[n]
 
     print("Operacion realizada exitosamente\n")
 
@@ -69,6 +70,7 @@ def crear():
     desc = input("Escriba la nueva descripcion: ")
     ruta = input("Escriba la nueva ruta del archivo de reservaciones: ")
     ruta2 = input("Escriba la nueva ruta del archivo de hoteles: ")
+    ruta3 = input("Escriba la nueva ruta del archivo de habitaciones: ")
 
     with open(control.rta_cfg, "r") as doc:
         reader = csv.reader(doc,delimiter=";")
@@ -134,7 +136,9 @@ class Hotel:
         self.direccion = direccion
 
 class Habitacion:
-    def __init__(self, numero, tipo, disponible):
+    def __init__(self, nombreC,nombreH, numero, tipo, disponible):
+        self.nombreC = nombreC
+        self.nombreH = nombreH
         self.numero = numero
         self.tipo = tipo
         self.disponible = disponible
@@ -451,8 +455,6 @@ def imprimir(personas):
     print("| ID     | NOMBRE         | CEDULA     | HAB | TIPO       | PRECIO   | N° PERSONAS | N° RESERVACIONES | RESERVA    |     ENTRADA - SALIDA    | DURACION (DIAS) |")
     print(linea)
     
-    cola.recorrer()
-
     print(linea + "\n")
     input("Presione ENTER para continuar ")
     print()
@@ -524,13 +526,9 @@ def main():
                 lista_acciones.append([datetime.datetime.now(), "Acción: Se imprimieron los datos"])
 
             """--------------------------------GESTION DE RESERVAS-------------------------"""
-            if opcion ==2:
-                subopciones = ['Agregar','Eliminar','Buscar']
-
-            """--------------------------------GESTION DE HOTELES--------------------------"""
-            if opcion == 3:
+            if opcion == 2:
                 subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
-                submenu = menu('SELECCIONES UNA OPCIÓN', subopciones, [1,2,3,4])
+                submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
 
                 if submenu == 1:
                     nombreHotel = input("Ingrese el nombre del hotel: ")
@@ -545,7 +543,51 @@ def main():
                 if submenu == 2:
                     subopciones2 = ['Nombre', 'Habitacion', 'Teléfono', 'Dirección']
 
-                    submenu2 = menu('SELECCIONES UNA OPCIÓN', subopciones2, [1,2,3,4])
+                    submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4])
+                    nombre = input("\nEscriba el nombre del hotel: ")
+
+                    if submenu2 == 1:
+                        nuevo_valor = input("Escriba el nuevo nombre del hotel: ")
+                        atributo = "nombre"
+                    if submenu2 == 2:
+                        nuevo_valor = input("Escriba el nuevo número de habitaciones disponibles del hotel: ")
+                        atributo = "num_habitaciones"
+                    if submenu2 == 3:
+                        nuevo_valor = input("Escriba el nuevo número de teléfono del hotel: ")
+                        atributo = "num_telf"
+                    if submenu2 == 4:
+                        nuevo_valor = input("Escriba la nueva dirección del hotel: ")
+                        atributo = "direccion"    
+                    lista_hoteles.modificar_atributo(nombre, atributo, nuevo_valor)
+                    modificar2(nombre,(submenu2-1),nuevo_valor)
+                    print("\n\nModificado con éxito")
+
+                if submenu == 3: 
+                    lista_hoteles.imprimir_hoteles()
+
+                if submenu == 4:
+                    nombre = input("Ingrese el nombre del hotel que quiere eliminar: ")
+                    lista_hoteles.eliminar(nombre)    
+                    borrar(nombre)
+            """--------------------------------GESTION DE HOTELES--------------------------"""
+            if opcion == 3:
+                subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
+                submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
+
+                if submenu == 1:
+                    nombreHotel = input("Ingrese el nombre del hotel: ")
+                    nHabitaciones = input("Ingrese el número de habitaciones disponibles: ")
+                    nTelefono = input("Ingrese el número de teléfono del hotel: ")
+                    direccion = input("Ingrese la dirección del hotel: ")
+                    newHotel = Hotel(nombreHotel,nHabitaciones,nTelefono,direccion)
+                    lista_hoteles.agregar(newHotel)
+                    crear2(nombreHotel,nHabitaciones,nTelefono,direccion)
+                    print("\n\nCreado con éxito")
+
+                if submenu == 2:
+                    subopciones2 = ['Nombre', 'Habitacion', 'Teléfono', 'Dirección']
+
+                    submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4])
                     nombre = input("\nEscriba el nombre del hotel: ")
 
                     if submenu2 == 1:
