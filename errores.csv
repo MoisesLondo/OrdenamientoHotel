@@ -1,1 +1,8 @@
-FECHA,MÓDULO,ERROR
+
+2023-09-27 17:05:43.446566,Gestión de reserva,invalid literal for int() with base 10: 'dsdsafasf'
+2023-09-27 17:05:36.682174,Menu,invalid literal for int() with base 10: 'ss'
+2023-09-27 17:05:26.824871,Menu,invalid literal for int() with base 10: 'asd'
+2023-09-27 17:05:25.191489,Menu,invalid literal for int() with base 10: 'asd'
+2023-09-27 17:05:23.587864,Menu,invalid literal for int() with base 10: 'asd'
+2023-09-27 19:00:51.114555,Gestión de reserva,time data '123' does not match format '%d/%m/%Y'
+2023-09-29 20:18:10.714935,Gestión de reserva,name 'lista_hoteles' is not defined
