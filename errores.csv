@@ -6,3 +6,5 @@
 2023-09-27 17:05:23.587864,Menu,invalid literal for int() with base 10: 'asd'
 2023-09-27 19:00:51.114555,Gestión de reserva,time data '123' does not match format '%d/%m/%Y'
 2023-09-29 20:18:10.714935,Gestión de reserva,name 'lista_hoteles' is not defined
+2023-10-02 20:43:38.108183,Impresión,'123'
+2023-10-02 20:43:38.108183,Impresión,'123'

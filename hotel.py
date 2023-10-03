@@ -659,9 +659,12 @@ def gestion_reservas(lista_hoteles):
                     nombre = input('Ingrese el nombre del cliente: ')
                     cedula = input('Ingrese la cedula del cliente: ')
                     habitacion = input('Ingrese la habitacion: ')
+                    int(habitacion)
                     tipo = input('Ingrese el tipo de habitacion: ')
                     precio = input('Ingrese el precio de la habitacion: ')
+                    float(precio)
                     num_personas = input('Ingrese el numero de personas: ')
+                    int(num_personas)
                     reserva = input('Que dia fue la resrvacion? (dd/mm/AAAA):')
                     fecha(reserva)
                     entrada = input('Ingrese la fecha de entrada (dd/mm/AAAA):')
@@ -678,7 +681,7 @@ def gestion_reservas(lista_hoteles):
                     print(f"No se encontró el hotel {hotel} en la lista.")
 
             except ValueError as e:
-                print('\nPor favor introduzca una fecha valida\n')
+                print('\nPor favor introduzca un numero/fecha valida\n')
                 listarErrores(errores,"Gestión de reserva", e)
 
 
