@@ -205,8 +205,9 @@ class Acción:
         self.modulo = modulo
 
 class Empleado:
-    def __init__(self,nombre, posicion,salario,fecha):
+    def __init__(self,nombre, apellido ,posicion,salario,fecha):
         self.nombre = nombre
+        self.apellido = apellido
         self.posicion = posicion
         self.salario = salario
         self.fecha = fecha
@@ -285,19 +286,28 @@ class Arbol:
         if self.raiz is None:
             self.raiz = nuevo_nodo
         else:
-            self.insertar_recursivo(nuevo_nodo, self.raiz)
+            self.agregarR(nuevo_nodo, self.raiz)
 
-    def insertar_recursivo(self, nuevo_nodo, nodo_actual):
+    def agregarR(self, nuevo_nodo, nodo_actual):
         if nuevo_nodo.dato < nodo_actual.dato:
             if nodo_actual.izq is None:
                 nodo_actual.izq = nuevo_nodo
             else:
-                self.insertar_recursivo(nuevo_nodo, nodo_actual.izq)
+                self.agregarR(nuevo_nodo, nodo_actual.izq)
         else:
             if nodo_actual.der is None:
                 nodo_actual.der = nuevo_nodo
             else:
-                self.insertar_recursivo(nuevo_nodo, nodo_actual.der)
+                self.agregarR(nuevo_nodo, nodo_actual.der)
+    
+    def inorden(self):
+        self.inordenR(self.raiz)
+
+    def inordenR(self, nodo_actual):
+        if nodo_actual is not None:
+            self.inordenR(nodo_actual.izq)
+            print(nodo_actual.dato)
+            self.inordenR(nodo_actual.der)
 
 """COLAS"""
 
@@ -391,6 +401,7 @@ class control:
     rta_cfg = ""
     rta_hotel = ""
     rta_hoteles = ""
+    rta_empleado = ""
     val_rta = False
     
     cola = Cola()
@@ -921,13 +932,31 @@ def algoritmos_ordenamiento(personas):
 
     except Exception as e:
         print("\nIngrese un valor correcto")
-        listarErrores(errores,"Algoritmos de ordenamiento", e) 
+        listarErrores(errores,"Algoritmos de ordenamiento", e)
+
+def gestionEmpleados(Arbol):
+    subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
+    submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
+    if submenu == 1:
+            nombre = input("Ingrese el nombre del empleado: ")
+            apellido = input("Ingrese el apellido del empleado: ")
+            posicion = input("Ingrese la posicion del empleado: ")
+            salario = input("Ingrese el salario del empleado: ")
+            fecha = input("Ingrese la fehca de contratación del empleado: ")
+            empleado = Empleado(nombre,apellido,posicion,salario,fecha)
+            Arbol.agregar(empleado)
+            print("\n\nCreado con éxito")
+            listarAcciones(acciones,f"Se creo el registro del empleado {nombre} {apellido}")
+    if submenu == 3:
+        Arbol.inorden()
+
 
 def main():
 
     incializar() # CARGA EL ARCHIVO DE CONFIGURACION
     hoteles = ListaEnlazada()
     lista_hoteles = leer_hoteles(hoteles)
+    arbolb = Arbol()
     
 
     personas = control(leerArchivo([], True))
@@ -942,8 +971,8 @@ def main():
 
             
             opciones = ['Imprimir datos','Gestion de Reservaciones','Gestion de Hoteles', "Gestion de Archivos", 'Algortimos de Ordenamiento',
-                        "Historial de errores","Historial de acciones",'Terminar']
-            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8])
+                        "Historial de errores","Historial de acciones","Gestión de empleados",'Terminar']
+            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8,9])
             
 
             if opcion == 1 and val: listado()
@@ -969,8 +998,11 @@ def main():
             if opcion == 7:
                 acciones.recorrer2()
                 acciones.exportar_a_archivo2("acciones.csv")
-
+            
             if opcion == 8:
+                gestionEmpleados(arbolb)
+
+            if opcion == 9:
                 print("Sesion Terminada")
                 break
 
