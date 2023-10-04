@@ -150,10 +150,6 @@ def borrar(nombre):
             if hotel[0] != nombre:
                 writer.writerow(hotel)
 
-def exportar(lista):
-    with open("errores.txt", "w") as exportar:
-            
-            exportar.write(f"{lista_errores}")
 
 """Funcion que te crea un menu
     le tienen que enviar el mensaje de lo que pide, una lista de las opciones que va a mostrar,
@@ -207,6 +203,14 @@ class Acción:
     def __init__(self,fecha,modulo):
         self.fecha = fecha
         self.modulo = modulo
+
+class Empleado:
+    def __init__(self,nombre, posicion,salario,fecha):
+        self.nombre = nombre
+        self.posicion = posicion
+        self.salario = salario
+        self.fecha = fecha
+        
 
 class ListaEnlazada:
     def __init__(self):
@@ -266,6 +270,34 @@ class ListaEnlazada:
             actual = actual.siguiente
 
 """Aqui termina"""
+class NodoArbol:
+    def __init__(self,dato):
+        self.dato = dato
+        self.der = None
+        self.izq = None
+
+class Arbol:
+    def __init__(self):
+        self.raiz = None
+    
+    def agregar(self, dato):
+        nuevo_nodo = NodoArbol(dato)
+        if self.raiz is None:
+            self.raiz = nuevo_nodo
+        else:
+            self.insertar_recursivo(nuevo_nodo, self.raiz)
+
+    def insertar_recursivo(self, nuevo_nodo, nodo_actual):
+        if nuevo_nodo.dato < nodo_actual.dato:
+            if nodo_actual.izq is None:
+                nodo_actual.izq = nuevo_nodo
+            else:
+                self.insertar_recursivo(nuevo_nodo, nodo_actual.izq)
+        else:
+            if nodo_actual.der is None:
+                nodo_actual.der = nuevo_nodo
+            else:
+                self.insertar_recursivo(nuevo_nodo, nodo_actual.der)
 
 """COLAS"""
 
