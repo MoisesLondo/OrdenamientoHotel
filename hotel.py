@@ -206,12 +206,13 @@ class Acción:
         self.modulo = modulo
 
 class Empleado:
-    def __init__(self,nombre, apellido ,posicion,salario,fecha):
+    def __init__(self,nombre, apellido ,posicion,salario,fecha, hotel):
         self.nombre = nombre
         self.apellido = apellido
         self.posicion = posicion
         self.salario = salario
         self.fecha = fecha
+        self.hotel = hotel
 
     def __lt__(self, otro_empleado):
         return self.salario < otro_empleado.salario
@@ -363,12 +364,15 @@ class Arbol:
 
         while len(pila) > 0:
             nodo = pila.pop()
-            print(cadena2.format(nodo.valor.nombre, nodo.valor.apellido, nodo.valor.posicion, nodo.valor.salario, nodo.valor.fecha))
+            print(cadena2.format(nodo.valor.nombre, nodo.valor.apellido, nodo.valor.posicion, nodo.valor.salario, nodo.valor.fecha, nodo.valor.hotel))
 
             if nodo.izquierda is not None:
                 pila.append(nodo.izquierda)
             if nodo.derecha is not None:
                 pila.append(nodo.derecha)
+def igualdad(nodo1, nodo2):
+        return nodo1.valor.hotel == nodo2.valor.hotel
+    
     
 
 """COLAS"""
@@ -1006,13 +1010,14 @@ def gestionEmpleados(Arbol):
                 posicion = input("Ingrese la posicion del empleado: ")
                 salario = input("Ingrese el salario del empleado: ")
                 fecha = input("Ingrese la fehca de contratación del empleado: ")
-                empleado = Empleado(nombre,apellido,posicion,salario,fecha)
+                nhotel = input("Ingrese el hotel donde trabaja el empleado: ")
+                empleado = Empleado(nombre,apellido,posicion,salario,fecha,nhotel)
                 Arbol.agregar(empleado)
                 print("\n\nCreado con éxito")
                 listarAcciones(acciones,f"Se creo el registro del empleado {nombre} {apellido}")
         if submenu == 2:
-            subopciones2 = ['Nombre','Apellido','Salario', 'Posición', 'Fecha']
-            submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4,5])
+            subopciones2 = ['Nombre','Apellido','Salario', 'Posición', 'Fecha','Hotel']
+            submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4,5,6])
             nombre = input("Ingrese el nombre del empleado: ")
             if submenu2 == 1:
                 atributo = "nombre"
@@ -1024,15 +1029,19 @@ def gestionEmpleados(Arbol):
                 atributo = "posicion"
             if submenu2 == 5:
                 atributo = "fecha"
+            if submenu2 == 6:
+                atributo = "hotel"
             nuevo = input(f"Ingrese el nuevo dato ({atributo}): ")
             Arbol.modificarArbol(nombre, atributo ,nuevo)
             print("\n\nModificado con éxito")
             listarAcciones(acciones,f"Se modificó el registro del empleado {nombre}")
         if submenu == 3:
             try:
-                print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA"))
+                nhotel = input("Ingrese el hotel: ")
+                print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA", "HOTEL"))
                 Arbol.recorrer_en_profundidad()
                 listarAcciones(acciones,"Se mostró la lista de empleados")
+                Arbol.serializar("arbol_serializado.pkl")
             except AttributeError as e:
                 print("\nLista vacia")
                 listarErrores(errores,"Gestion de empleados", e)
@@ -1128,6 +1137,6 @@ def inicializar_archivos():
 errores = Pila()
 acciones = Pila()
 cadena = "| {:<6} | {:<15}| {:<10} | {:>3} | {:<10} | {:>8} | {:>11} |{:>17} | {:<10} | {:<10} - {:>10} | {:>15} |"
-cadena2 = "| {:<12} | {:<12} | {:<8} | {:<8} | {:<12} |"
+cadena2 = "| {:<12} | {:<12} | {:<8} | {:<8} | {:<12} | {:<15} |"
 
 inicializar_archivos()
