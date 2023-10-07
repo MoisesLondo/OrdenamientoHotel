@@ -1,0 +1,141 @@
+import pickle
+class Nodo:
+    def __init__(self, valor):
+        self.valor = valor
+        self.izquierda = None
+        self.derecha = None
+class Rol:
+    def __init__(self, id, nombre, descripcion, permisos):
+        self.id = id
+        self.nombre = nombre
+        self.descripcion = descripcion
+        self.permisos = permisos
+class ArbolBinario:
+    def __init__(self):
+        self.raiz = None
+
+    def insertar(self, rol):
+        if self.raiz is None:
+            self.raiz = Nodo(rol)
+        else:
+            self._insertar_recursivo(rol, self.raiz)
+
+    def _insertar_recursivo(self, rol, nodo_actual):
+        if rol.nombre < nodo_actual.valor.nombre:
+            if nodo_actual.izquierda is None:
+                nodo_actual.izquierda = Nodo(rol)
+            else:
+                self._insertar_recursivo(rol, nodo_actual.izquierda)
+        elif rol.nombre > nodo_actual.valor.nombre:
+            if nodo_actual.derecha is None:
+                nodo_actual.derecha = Nodo(rol)
+            else:
+                self._insertar_recursivo(rol, nodo_actual.derecha)
+        else:
+            pass
+
+    def eliminar(self, nombre):
+        self.raiz = self._eliminar_recursivo(nombre, self.raiz)
+
+    def _eliminar_recursivo(self, nombre, nodo_actual):
+        if nodo_actual is None:
+            return None
+        if nombre < nodo_actual.valor.nombre:
+            nodo_actual.izquierda = self._eliminar_recursivo(nombre,nodo_actual.izquierda)
+        elif nombre > nodo_actual.valor.nombre:
+            nodo_actual.derecha = self._eliminar_recursivo(nombre,nodo_actual.derecha)
+        else:
+            if nodo_actual.izquierda is None:
+                return nodo_actual.derecha
+            elif nodo_actual.derecha is None:
+                return nodo_actual.izquierda
+            else:
+                sucesor = self._encontrar_minimo(nodo_actual.derecha)
+                nodo_actual.valor = sucesor.valor
+                nodo_actual.derecha = self._eliminar_recursivo(sucesor.valor.nombre, nodo_actual.derecha)
+        return nodo_actual
+    
+    def _encontrar_minimo(self, nodo_actual):
+        if nodo_actual.izquierda is None:
+            return nodo_actual
+        return self._encontrar_minimo(nodo_actual.izquierda)
+    
+    def modificar(self, nombre, nuevo_rol):
+        nodo = self.buscar(nombre)
+        if nodo:
+            nodo.valor = nuevo_rol
+
+    def buscar(self, nombre):
+        return self._buscar_recursivo(nombre, self.raiz)
+    
+    def _buscar_recursivo(self, nombre, nodo_actual):
+        if nodo_actual is None or nodo_actual.valor.nombre == nombre:
+            return nodo_actual
+        if nombre < nodo_actual.valor.nombre:
+            return self._buscar_recursivo(nombre, nodo_actual.izquierda)
+        return self._buscar_recursivo(nombre, nodo_actual.derecha)
+    
+    def serializar(self, nombre_archivo):
+        with open(nombre_archivo, 'wb') as archivo:
+            pickle.dump(self.raiz, archivo)
+    @classmethod
+    def deserializar(cls, nombre_archivo):
+        arbol = ArbolBinario()
+        with open(nombre_archivo, 'rb') as archivo:
+            arbol.raiz = pickle.load(archivo)
+        return arbol
+    def inorden(self):
+        self._inorden_recursivo(self.raiz)
+    def _inorden_recursivo(self, nodo_actual):
+        if nodo_actual is not None:
+            self._inorden_recursivo(nodo_actual.izquierda)
+            print(nodo_actual.valor, end=" ")
+            self._inorden_recursivo(nodo_actual.derecha)
+    
+    def recorrer_en_profundidad(arbol):
+        if arbol is None:
+            return
+        pila = []
+        pila.append(arbol.raiz)
+
+        while len(pila) > 0:
+            nodo = pila.pop()
+            print(nodo.valor.nombre)
+
+            if nodo.izquierda is not None:
+                pila.append(nodo.izquierda)
+            if nodo.derecha is not None:
+                pila.append(nodo.derecha)
+# Ejemplo de uso:
+arbol = ArbolBinario()
+rol_administrador = Rol(1, "Administrador", "Rol con todos los permisos", ["crear", "editar", "eliminar"])
+rol_editor = Rol(2, "Editor", "Rol con permisos de edición", ["editar","publicar"])
+rol_lector = Rol(3, "Lector", "Rol con permisos de lectura", ["leer"])
+arbol.insertar(rol_administrador)
+arbol.insertar(rol_editor)
+arbol.insertar(rol_lector)
+# Modificar un rol
+nombre_rol_modificar = "Editor"
+nuevo_rol = Rol(2, "Editor", "Rol con permisos de edición avanzados",
+["editar", "publicar", "borrar"])
+arbol.modificar(nombre_rol_modificar, nuevo_rol)
+# Eliminar un rol
+nombre_rol_eliminar = "Lector"
+arbol.eliminar(nombre_rol_eliminar)
+arbol.recorrer_en_profundidad()
+arbol.inorden()
+
+# Serialización
+"""nombre_archivo = "arbol_serializado.pkl"
+arbol.serializar(nombre_archivo)
+print(f"El árbol ha sido serializado en el archivo'{nombre_archivo}'.")
+# Deserialización
+arbol_deserializado = ArbolBinario.deserializar(nombre_archivo)
+print("El árbol ha sido deserializado desde el archivo:")
+nombre_rol_buscado = "Editor"
+nodo_encontrado = arbol_deserializado.buscar(nombre_rol_buscado)
+if nodo_encontrado:
+    rol_encontrado = nodo_encontrado.valor
+    print(f"Rol encontrado: {rol_encontrado.nombre}")
+else:
+    print(f"No se encontró el rol '{nombre_rol_buscado}'.")"""

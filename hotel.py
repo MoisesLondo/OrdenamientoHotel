@@ -2,6 +2,7 @@ import csv
 import datetime
 import os
 import random
+import pickle
 
 class Pila:
     def __init__(self):
@@ -211,6 +212,9 @@ class Empleado:
         self.posicion = posicion
         self.salario = salario
         self.fecha = fecha
+
+    def __lt__(self, otro_empleado):
+        return self.salario < otro_empleado.salario
         
 
 class ListaEnlazada:
@@ -273,41 +277,99 @@ class ListaEnlazada:
 """Aqui termina"""
 class NodoArbol:
     def __init__(self,dato):
-        self.dato = dato
-        self.der = None
-        self.izq = None
+        self.valor = dato
+        self.derecha = None
+        self.izquierda = None
 
 class Arbol:
     def __init__(self):
         self.raiz = None
     
     def agregar(self, dato):
-        nuevo_nodo = NodoArbol(dato)
         if self.raiz is None:
-            self.raiz = nuevo_nodo
+            self.raiz = NodoArbol(dato)
         else:
-            self.agregarR(nuevo_nodo, self.raiz)
+            self.agregarR(dato, self.raiz)
 
-    def agregarR(self, nuevo_nodo, nodo_actual):
-        if nuevo_nodo.dato < nodo_actual.dato:
-            if nodo_actual.izq is None:
-                nodo_actual.izq = nuevo_nodo
+    def agregarR(self, dato, nodo_actual):
+        if dato.nombre < nodo_actual.valor.nombre:
+            if nodo_actual.izquierda is None:
+                nodo_actual.izquierda = NodoArbol(dato)
             else:
-                self.agregarR(nuevo_nodo, nodo_actual.izq)
+                self.agregarR(dato, nodo_actual.izquierda)
+        elif dato.nombre > nodo_actual.valor.nombre:
+            if nodo_actual.derecha is None:
+                nodo_actual.derecha = NodoArbol(dato)
+            else:
+                self.agregarR(dato, nodo_actual.derecha)
         else:
-            if nodo_actual.der is None:
-                nodo_actual.der = nuevo_nodo
+            pass
+    def eliminar(self, nombre):
+        self.raiz = self._eliminar_recursivo(nombre, self.raiz)
+
+    def _eliminar_recursivo(self, nombre, nodo_actual):
+        if nodo_actual is None:
+            return None
+        if nombre < nodo_actual.valor.nombre:
+            nodo_actual.izquierda = self._eliminar_recursivo(nombre,nodo_actual.izquierda)
+        elif nombre > nodo_actual.valor.nombre:
+            nodo_actual.derecha = self._eliminar_recursivo(nombre,nodo_actual.derecha)
+        else:
+            if nodo_actual.izquierda is None:
+                return nodo_actual.derecha
+            elif nodo_actual.derecha is None:
+                return nodo_actual.izquierda
             else:
-                self.agregarR(nuevo_nodo, nodo_actual.der)
+                sucesor = self._encontrar_minimo(nodo_actual.derecha)
+                nodo_actual.valor = sucesor.valor
+                nodo_actual.derecha = self._eliminar_recursivo(sucesor.valor.nombre, nodo_actual.derecha)
+        return nodo_actual
     
-    def inorden(self):
-        self.inordenR(self.raiz)
+    def _encontrar_minimo(self, nodo_actual):
+        if nodo_actual.izquierda is None:
+            return nodo_actual
+        return self._encontrar_minimo(nodo_actual.izquierda)
+    
+    def modificarArbol(self, nombre, atributo,cambio):
+        nodo = self.buscar(nombre)
+        if nodo:
+            setattr(nodo.valor, atributo, cambio)
 
-    def inordenR(self, nodo_actual):
-        if nodo_actual is not None:
-            self.inordenR(nodo_actual.izq)
-            print(nodo_actual.dato)
-            self.inordenR(nodo_actual.der)
+    def buscar(self, nombre):
+        return self._buscar_recursivo(nombre, self.raiz)
+    
+    def _buscar_recursivo(self, nombre, nodo_actual):
+        if nodo_actual is None or nodo_actual.valor.nombre == nombre:
+            return nodo_actual
+        if nombre < nodo_actual.valor.nombre:
+            return self._buscar_recursivo(nombre, nodo_actual.izquierda)
+        return self._buscar_recursivo(nombre, nodo_actual.derecha)
+    
+    def serializar(self, nombre_archivo):
+        with open(nombre_archivo, 'wb') as archivo:
+            pickle.dump(self.raiz, archivo)
+    @classmethod
+    def deserializar(cls, nombre_archivo):
+        arbol = Arbol()
+        with open(nombre_archivo, 'rb') as archivo:
+            arbol.raiz = pickle.load(archivo)
+        return arbol
+    
+    def recorrer_en_profundidad(arbol):
+        if arbol is None:
+            return
+        pila = []
+        pila.append(arbol.raiz)
+
+        while len(pila) > 0:
+            nodo = pila.pop()
+            print(cadena2.format(nodo.valor.nombre, nodo.valor.apellido, nodo.valor.posicion, nodo.valor.salario, nodo.valor.fecha))
+
+            if nodo.izquierda is not None:
+                pila.append(nodo.izquierda)
+            if nodo.derecha is not None:
+                pila.append(nodo.derecha)
+    
 
 """COLAS"""
 
@@ -935,20 +997,53 @@ def algoritmos_ordenamiento(personas):
         listarErrores(errores,"Algoritmos de ordenamiento", e)
 
 def gestionEmpleados(Arbol):
-    subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
-    submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
-    if submenu == 1:
+    try:
+        subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
+        submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
+        if submenu == 1:
+                nombre = input("Ingrese el nombre del empleado: ")
+                apellido = input("Ingrese el apellido del empleado: ")
+                posicion = input("Ingrese la posicion del empleado: ")
+                salario = input("Ingrese el salario del empleado: ")
+                fecha = input("Ingrese la fehca de contratación del empleado: ")
+                empleado = Empleado(nombre,apellido,posicion,salario,fecha)
+                Arbol.agregar(empleado)
+                print("\n\nCreado con éxito")
+                listarAcciones(acciones,f"Se creo el registro del empleado {nombre} {apellido}")
+        if submenu == 2:
+            subopciones2 = ['Nombre','Apellido','Salario', 'Posición', 'Fecha']
+            submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4,5])
             nombre = input("Ingrese el nombre del empleado: ")
-            apellido = input("Ingrese el apellido del empleado: ")
-            posicion = input("Ingrese la posicion del empleado: ")
-            salario = input("Ingrese el salario del empleado: ")
-            fecha = input("Ingrese la fehca de contratación del empleado: ")
-            empleado = Empleado(nombre,apellido,posicion,salario,fecha)
-            Arbol.agregar(empleado)
-            print("\n\nCreado con éxito")
-            listarAcciones(acciones,f"Se creo el registro del empleado {nombre} {apellido}")
-    if submenu == 3:
-        Arbol.inorden()
+            if submenu2 == 1:
+                atributo = "nombre"
+            if submenu2 == 2:
+                atributo = "apellido"
+            if submenu2 == 3:
+                atributo = "salario"
+            if submenu2 == 4:
+                atributo = "posicion"
+            if submenu2 == 5:
+                atributo = "fecha"
+            nuevo = input(f"Ingrese el nuevo dato ({atributo}): ")
+            Arbol.modificarArbol(nombre, atributo ,nuevo)
+            print("\n\nModificado con éxito")
+            listarAcciones(acciones,f"Se modificó el registro del empleado {nombre}")
+        if submenu == 3:
+            try:
+                print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA"))
+                Arbol.recorrer_en_profundidad()
+                listarAcciones(acciones,"Se mostró la lista de empleados")
+            except AttributeError as e:
+                print("\nLista vacia")
+                listarErrores(errores,"Gestion de empleados", e)
+        if submenu == 4:
+            nombre = input("Ingrese el nombre del empleado: ")
+            Arbol.eliminar(nombre)
+            print("\n\nEliminado con éxito")
+            listarAcciones(acciones,"Se eliminó un registro de la lista de empleados")
+    except Exception as e:
+        print("\nIngrese un valor correcto")
+        listarErrores(errores,"Gestion de empleados", e)
 
 
 def main():
@@ -962,7 +1057,7 @@ def main():
     personas = control(leerArchivo([], True))
 
     while True:
-        try:
+        #try:
             val = control.val_rta
 
             if control.cond == "asc": con = "Ascendente"
@@ -1010,14 +1105,14 @@ def main():
             """se sobreescribe el archivo hotel.csv"""
 
 
-        except Exception as e:
-            print("\nValor inválido, introduzca solo numeros")
-            listarErrores(errores,"Menu",e)
+        #except Exception as e:
+            #print("\nValor inválido, introduzca solo numeros")
+            #listarErrores(errores,"Menu",e)
 
     guardar_reservaciones()
 
 def inicializar_archivos():
-    try:
+    #try:
         op = menu("Utilizar la ruta por defecto del archivo de configuracion?",["Si","No"],[True,False])
         if op:
             control.rta_cfg = str(os.path.abspath(os.getcwd())) + "\config.csv"
@@ -1026,12 +1121,13 @@ def inicializar_archivos():
 
         main() # <------------///
 
-    except Exception as e:
-        print("\nValor inválido, introduzca solo numeros")
-        listarErrores(errores,"Menu",e)
+    #except Exception as e:
+        #print("\nValor inválido, introduzca solo numeros")
+        #listarErrores(errores,"Menu",e)
 
 errores = Pila()
 acciones = Pila()
 cadena = "| {:<6} | {:<15}| {:<10} | {:>3} | {:<10} | {:>8} | {:>11} |{:>17} | {:<10} | {:<10} - {:>10} | {:>15} |"
+cadena2 = "| {:<12} | {:<12} | {:<8} | {:<8} | {:<12} |"
 
 inicializar_archivos()
