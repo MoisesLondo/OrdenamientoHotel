@@ -432,7 +432,17 @@ class AVLTree:
     def rotaIzq(self, nodoDer):
         hijoDer = nodoDer.right
         nodoDer.right = hijoDer.left
-        hijoDer
+        hijoDer.left = nodoDer
+        nodoDer.height = 1 + max(self.altura(nodoDer.left), self.altura(nodoDer.right))
+        hijoDer.height = 1 + max(self.altura(hijoDer.left), self.altura(hijoDer.right))
+        return hijoDer
+
+    """Este es el metodo para imprimir la informacion obteniendo la factura"""
+    def imprime_arbol(self, root):
+        if root is not None:
+            self.imprime_arbol(root.left)
+            print(f"Nombre: {root.data.nombre}, Apellido: {root.data.apellido}, CI: {root.data.ci}, Hotel: {root.data.hotel}")
+            self.imprime_arbol(root.right)
    
 
 """COLAS"""
