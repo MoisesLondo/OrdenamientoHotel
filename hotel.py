@@ -372,6 +372,34 @@ class Arbol:
                 pila.append(nodo.izquierda)
             if nodo.derecha is not None:
                 pila.append(nodo.derecha)
+
+    def inorden(self):
+        self._inorden_recursivo(self.raiz)
+
+    def _inorden_recursivo(self, nodo_actual):
+        if nodo_actual is not None:
+            self._inorden_recursivo(nodo_actual.izquierda)
+            print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
+            self._inorden_recursivo(nodo_actual.derecha)
+
+    def postorden(self):
+        self._postorden_recursivo(self.raiz)
+
+    def _postorden_recursivo(self, nodo_actual):
+        if nodo_actual is not None:
+            self._postorden_recursivo(nodo_actual.izquierda)
+            self._postorden_recursivo(nodo_actual.derecha)
+            print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
+    
+    def preorden(self):
+        self._preorden_recursivo(self.raiz)
+        
+    def _preorden_recursivo(self, nodo_actual):
+        if nodo_actual is not None:
+            print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
+            self._preorden_recursivo(nodo_actual.izquierda)
+            self._preorden_recursivo(nodo_actual.derecha)
+
 def igualdad(nodo1, nodo2):
         return nodo1.valor.hotel == nodo2.valor.hotel
 
@@ -1109,7 +1137,8 @@ def gestionEmpleados(Arbol):
             try:
                 nhotel = input("Ingrese el hotel: ")
                 print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA", "HOTEL"))
-                Arbol.recorrer_en_profundidad()
+                #Arbol.recorrer_en_profundidad()
+                Arbol.inorden()
                 listarAcciones(acciones,"Se mostró la lista de empleados")
                 Arbol.serializar("arbol_serializado.pkl")
             except AttributeError as e:
