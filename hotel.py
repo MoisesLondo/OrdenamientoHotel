@@ -380,14 +380,18 @@ class Arbol:
             if nodo.derecha is not None:
                 pila.append(nodo.derecha)
 
-    def inorden(self):
-        self._inorden_recursivo(self.raiz)
+    def inorden(self, param = None, key = None):
+        self._inorden_recursivo(self.raiz, param, key)
 
-    def _inorden_recursivo(self, nodo_actual):
+    def _inorden_recursivo(self, nodo_actual, param, key):
         if nodo_actual is not None:
-            self._inorden_recursivo(nodo_actual.izquierda)
-            print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
-            self._inorden_recursivo(nodo_actual.derecha)
+            self._inorden_recursivo(nodo_actual.izquierda, param, key)
+            if key is None:
+                print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
+            else:
+                if key(nodo_actual.valor) == param:
+                    print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
+            self._inorden_recursivo(nodo_actual.derecha, param, key)
 
     def postorden(self):
         self._postorden_recursivo(self.raiz)
@@ -398,14 +402,15 @@ class Arbol:
             self._postorden_recursivo(nodo_actual.derecha)
             print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
     
-    def preorden(self):
-        self._preorden_recursivo(self.raiz)
+    def preorden(self, param, key):
+        self._preorden_recursivo(self.raiz, param, key)
         
-    def _preorden_recursivo(self, nodo_actual):
+    def _preorden_recursivo(self, nodo_actual, param, key):
         if nodo_actual is not None:
-            print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
-            self._preorden_recursivo(nodo_actual.izquierda)
-            self._preorden_recursivo(nodo_actual.derecha)
+            if key(nodo_actual.valor) == param:
+                print(cadena2.format(nodo_actual.valor.nombre, nodo_actual.valor.apellido, nodo_actual.valor.posicion, nodo_actual.valor.salario, nodo_actual.valor.fecha, nodo_actual.valor.hotel))
+            self._preorden_recursivo(nodo_actual.izquierda, param, key)
+            self._preorden_recursivo(nodo_actual.derecha, param, key)
 
 def igualdad(nodo1, nodo2):
         return nodo1.valor.hotel == nodo2.valor.hotel
@@ -1083,10 +1088,26 @@ def gestionEmpleados(Arbol):
 
         if submenu == 3:
             try:
-                # nhotel = input("Ingrese el hotel: ")
-                print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA", "HOTEL"))
-                # Arbol.recorrer_en_profundidad()
-                Arbol.inorden()
+                op = menu('Como los quiere listar?',['Hotel','Mes','Todos'],[1,2,3])
+
+                if op == 1:
+                    print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA", "HOTEL"))
+                    if menu('Por inorden o Preorden',['Inorden','Preorden'],[True, False]):
+                        hotel = input('Diga el nombre del hotel: ')
+                        Arbol.inorden(hotel, lambda x: x.hotel)
+                    else:
+                        hotel = input('Diga el nombre del hotel: ')
+                        Arbol.preorden(hotel, lambda x: x.hotel)
+
+                if op == 2:
+                    print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA", "HOTEL"))
+                    hotel = input('Diga la fecha: ')
+                    Arbol.preorden(hotel, lambda x: x.fecha)
+
+                if op == 3:
+                    print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA", "HOTEL"))
+                    # Arbol.recorrer_en_profundidad()
+                    Arbol.inorden()
                 listarAcciones(acciones,"Se mostró la lista de empleados")
             except AttributeError as e:
                 print("\nLista vacia")
@@ -1102,10 +1123,8 @@ def gestionEmpleados(Arbol):
         listarErrores(errores,"Gestion de empleados", e)
 
 
-
 def facturacion_pagos():
     op = menu('Como desea listar las facturas?',['Por hotel','Por metodo de pago','Todas'],[1,2,3])
-
     if op == 1:
         hotel = input('Diga el nombre del hotel: ')
         control.facturas.postorden(control.facturas.root, hotel, key = lambda x: x.hotel)
@@ -1217,3 +1236,4 @@ cadena2 = "| {:<12} | {:<12} | {:<8} | {:<8} | {:<12} | {:<15} |"
 
 
 inicializar_archivos()
+
