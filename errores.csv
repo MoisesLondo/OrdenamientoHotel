@@ -8,3 +8,5 @@
 2023-09-29 20:18:10.714935,Gestión de reserva,name 'lista_hoteles' is not defined
 2023-10-02 20:43:38.108183,Impresión,'123'
 2023-10-02 20:43:38.108183,Impresión,'123'
+2023-10-10 22:42:02.421954,Gestión de reserva,'<' not supported between instances of 'str' and 'int'
+2023-10-10 22:43:55.025558,Gestión de reserva,'arbol' object has no attribute 'root'

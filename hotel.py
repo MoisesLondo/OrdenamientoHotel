@@ -4,6 +4,8 @@ import os
 import random
 import pickle
 
+import facturas
+
 class Pila:
     def __init__(self):
         self.tope = None
@@ -216,7 +218,7 @@ class Empleado:
 
     def __lt__(self, otro_empleado):
         return self.salario < otro_empleado.salario
-        
+
 
 class ListaEnlazada:
     def __init__(self):
@@ -277,6 +279,8 @@ class ListaEnlazada:
 
 """Aqui termina"""
 
+
+
 """ARBOL BINARIO"""
 class NodoArbol:
     def __init__(self,dato):
@@ -307,6 +311,7 @@ class Arbol:
                 self.agregarR(dato, nodo_actual.derecha)
         else:
             pass
+    
     def eliminar(self, nombre):
         self.raiz = self._eliminar_recursivo(nombre, self.raiz)
 
@@ -327,16 +332,20 @@ class Arbol:
                 nodo_actual.valor = sucesor.valor
                 nodo_actual.derecha = self._eliminar_recursivo(sucesor.valor.nombre, nodo_actual.derecha)
         return nodo_actual
-    
+
     def _encontrar_minimo(self, nodo_actual):
         if nodo_actual.izquierda is None:
             return nodo_actual
         return self._encontrar_minimo(nodo_actual.izquierda)
-    
-    def modificarArbol(self, nombre, atributo,cambio):
-        nodo = self.buscar(nombre)
-        if nodo:
-            setattr(nodo.valor, atributo, cambio)
+
+    # def modificar(self, nombre, atributo,cambio):
+    #     nodo = self.buscar(nombre)
+    #     if nodo:
+    #         setattr(nodo.valor, atributo, cambio)
+
+    def modificar(self, valor_viejo, valor_nuevo):
+        self.eliminar(valor_viejo)
+        self.insertar(valor_nuevo)
 
     def buscar(self, nombre):
         return self._buscar_recursivo(nombre, self.raiz)
@@ -351,12 +360,10 @@ class Arbol:
     def serializar(self, nombre_archivo):
         with open(nombre_archivo, 'wb') as archivo:
             pickle.dump(self.raiz, archivo)
-    @classmethod
-    def deserializar(cls, nombre_archivo):
-        arbol = Arbol()
+
+    def deserializar(self, nombre_archivo):
         with open(nombre_archivo, 'rb') as archivo:
-            arbol.raiz = pickle.load(archivo)
-        return arbol
+            self.raiz = pickle.load(archivo)
     
     def recorrer_en_profundidad(arbol):
         if arbol is None:
@@ -402,75 +409,6 @@ class Arbol:
 
 def igualdad(nodo1, nodo2):
         return nodo1.valor.hotel == nodo2.valor.hotel
-
-"""ARBOL AVL PARA FACTURAS"""
-class AVLNode:
-    def __init__(self, data):
-        self.data = data
-        self.left = None
-        self.right = None
-        self.height = 1
-
-class AVLTree:
-    def __init__(self):
-        self.root = None
-
-    def insertArbol(self, data):
-        self.root = self._inserta(data, self.root)
-
-    def _inserta(self, data, node):
-        if node is None:
-            return AVLNode(data)
-        if data < node.data:
-            node.left = self._inserta(data, node.left)
-        else:
-            node.right = self._inserta(data, node.right)
-        node.height = 1 + max(self.altura(node.left), self.altura(node.right))
-        balance = self.balance(node)
-        if balance > 1:
-            if data < node.left.data:
-                return self.rotaDer(node)
-            else:
-                return self._left_right_rotate(node)
-        if balance < -1:
-            if data > node.right.data:
-                return self.rotaIzq(node)
-            else:
-                return self._right_left_rotate(node)
-        return node
-    
-    def altura(self, node):
-        if node is None:
-            return 0
-        return node.height
-    
-    def balance(self, node):
-        if node is None:
-            return 0
-        return self.altura(node.left) - self.altura(node.right)
-    
-    def rotaDer(self, node):
-        hijoIzq = node.left
-        node.left = hijoIzq.right
-        hijoIzq.right = node
-        node.height = 1 + max(self.altura(node.left), self.altura(node.right))
-        hijoIzq.height = 1 + max(self.altura(hijoIzq.left), self.altura(hijoIzq.right))
-        return hijoIzq
-        
-    def rotaIzq(self, nodoDer):
-        hijoDer = nodoDer.right
-        nodoDer.right = hijoDer.left
-        hijoDer.left = nodoDer
-        nodoDer.height = 1 + max(self.altura(nodoDer.left), self.altura(nodoDer.right))
-        hijoDer.height = 1 + max(self.altura(hijoDer.left), self.altura(hijoDer.right))
-        return hijoDer
-
-    """Este es el metodo para imprimir la informacion obteniendo la factura"""
-    def imprime_arbol(self, root):
-        if root is not None:
-            self.imprime_arbol(root.left)
-            print(f"Nombre: {root.data.nombre}, Apellido: {root.data.apellido}, CI: {root.data.ci}, Hotel: {root.data.hotel}")
-            self.imprime_arbol(root.right)
    
 
 """COLAS"""
@@ -567,9 +505,10 @@ class control:
     rta_hoteles = ""
     rta_empleado = ""
     val_rta = False
-    
+
     cola = Cola()
     lista_cola = []
+    facturas = facturas.arbol()
 
     def __init__(self, lista):
         self.lista = lista
@@ -852,12 +791,12 @@ def listado():
         listarErrores(errores,"Impresión",e)
 
 def gestion_reservas(lista_hoteles):
-    try:
+    # try:
         subopciones = ['Crear', 'Eliminar', 'Listar','Buscar']
         submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
 
         if submenu == 1:
-            try:
+            # try:
                 hotel = input('Diga para que hotel es esta reservacion: ')
 
                 objeto = lista_hoteles.buscar_por_nombre(hotel)
@@ -868,6 +807,9 @@ def gestion_reservas(lista_hoteles):
                     habitacion = input('Ingrese la habitacion: ')
                     int(habitacion)
                     tipo = input('Ingrese el tipo de habitacion: ')
+
+                    metodo = menu('ingrese el metodo de pago', ['Punto','Pago Movil','Divisas'],['Punto','Pago Movil','Divisas'])
+
                     precio = input('Ingrese el precio de la habitacion: ')
                     float(precio)
                     num_personas = input('Ingrese el numero de personas: ')
@@ -880,16 +822,19 @@ def gestion_reservas(lista_hoteles):
                     fecha(salida)
 
                     reservacion = Reservacion(iden, nombre, cedula, habitacion, tipo, precio, num_personas, reserva, entrada, salida, hotel)
-
                     control.cola.agregar(reservacion)
+
+                    factura = facturas.factura(nombre, cedula, hotel, precio, metodo, 'Placeholder')
+                    control.facturas.insert(factura)
+
                     print("Operacion Exitosa")
                     listarAcciones(acciones,f"Se creó una nueva reserva en el hotel {hotel}")
                 else:
                     print(f"No se encontró el hotel {hotel} en la lista.")
 
-            except ValueError as e:
-                print('\nPor favor introduzca un numero/fecha valida\n')
-                listarErrores(errores,"Gestión de reserva", e)
+            # except ValueError as e:
+            #     print('\nPor favor introduzca un numero/fecha valida\n')
+            #     listarErrores(errores,"Gestión de reserva", e)
 
 
         if submenu == 2:
@@ -944,9 +889,9 @@ def gestion_reservas(lista_hoteles):
                 print('\nPor favor introduzca un dato valido\n')
                 listarErrores(errores,"Gestión de reserva", e)
 
-    except Exception as e:
-        print("\nIngrese un valor correcto")
-        listarErrores(errores,"Gestión de reserva", e)
+    # except Exception as e:
+    #     print("\nIngrese un valor correcto")
+    #     listarErrores(errores,"Gestión de reserva", e)
 
 def gestion_hoteles(lista_hoteles):
     try:
@@ -1102,6 +1047,7 @@ def gestionEmpleados(Arbol):
     try:
         subopciones = ['Crear', 'Modificar', 'Listar', 'Eliminar']
         submenu = menu('SELECCIONE UNA OPCIÓN', subopciones, [1,2,3,4])
+
         if submenu == 1:
                 nombre = input("Ingrese el nombre del empleado: ")
                 apellido = input("Ingrese el apellido del empleado: ")
@@ -1113,6 +1059,7 @@ def gestionEmpleados(Arbol):
                 Arbol.agregar(empleado)
                 print("\n\nCreado con éxito")
                 listarAcciones(acciones,f"Se creo el registro del empleado {nombre} {apellido}")
+
         if submenu == 2:
             subopciones2 = ['Nombre','Apellido','Salario', 'Posición', 'Fecha','Hotel']
             submenu2 = menu('SELECCIONE UNA OPCIÓN', subopciones2, [1,2,3,4,5,6])
@@ -1130,20 +1077,21 @@ def gestionEmpleados(Arbol):
             if submenu2 == 6:
                 atributo = "hotel"
             nuevo = input(f"Ingrese el nuevo dato ({atributo}): ")
-            Arbol.modificarArbol(nombre, atributo ,nuevo)
+            Arbol.modificar(nombre, atributo ,nuevo)
             print("\n\nModificado con éxito")
             listarAcciones(acciones,f"Se modificó el registro del empleado {nombre}")
+
         if submenu == 3:
             try:
-                nhotel = input("Ingrese el hotel: ")
+                # nhotel = input("Ingrese el hotel: ")
                 print(cadena2.format("NOMBRE","APELLIDO","POSICIÓN","SALARIO","FECHA", "HOTEL"))
-                #Arbol.recorrer_en_profundidad()
+                # Arbol.recorrer_en_profundidad()
                 Arbol.inorden()
                 listarAcciones(acciones,"Se mostró la lista de empleados")
-                Arbol.serializar("arbol_serializado.pkl")
             except AttributeError as e:
                 print("\nLista vacia")
                 listarErrores(errores,"Gestion de empleados", e)
+
         if submenu == 4:
             nombre = input("Ingrese el nombre del empleado: ")
             Arbol.eliminar(nombre)
@@ -1154,13 +1102,37 @@ def gestionEmpleados(Arbol):
         listarErrores(errores,"Gestion de empleados", e)
 
 
+
+def facturacion_pagos():
+    op = menu('Como desea listar las facturas?',['Por hotel','Por metodo de pago','Todas'],[1,2,3])
+
+    if op == 1:
+        hotel = input('Diga el nombre del hotel: ')
+        control.facturas.postorden(control.facturas.root, hotel, key = lambda x: x.hotel)
+        # print('\nLa altura del arbol es ' + control.facturas.altura)
+    if op == 2:
+        param = menu('ingrese el metodo de pago', ['Punto','Pago Movil','Divisas'],['Punto','Pago Movil','Divisas'])
+        control.facturas.postorden(control.facturas.root, param, key = lambda x: x.metodo)
+        # print('\nLa altura del arbol es ' + control.facturas.altura)
+    if op == 3:
+        control.facturas.postorden(control.facturas.root)
+
+    input('\nPresione ENTER para continuar\n')
+    
+
+
 def main():
 
     incializar() # CARGA EL ARCHIVO DE CONFIGURACION
     hoteles = ListaEnlazada()
     lista_hoteles = leer_hoteles(hoteles)
     arbolb = Arbol()
-    
+    arbolb.deserializar('arbol_serializado.pkl')
+
+    try:
+        control.facturas.decode()
+    except Exception:
+        pass
 
     personas = control(leerArchivo([], True))
 
@@ -1174,8 +1146,8 @@ def main():
 
             
             opciones = ['Imprimir datos','Gestion de Reservaciones','Gestion de Hoteles', "Gestion de Archivos", 'Algortimos de Ordenamiento',
-                        "Historial de errores","Historial de acciones","Gestión de empleados",'Terminar']
-            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8,9])
+                        "Historial de errores","Historial de acciones","Gestión de empleados",'Facturacion y Pagos','Terminar']
+            opcion = menu("SELECCIONE UNA OPCIÓN: ", opciones, [1,2,3,4,5,6,7,8,9,10])
             
 
             if opcion == 1 and val: listado()
@@ -1202,10 +1174,11 @@ def main():
                 acciones.recorrer2()
                 acciones.exportar_a_archivo2("acciones.csv")
             
-            if opcion == 8:
-                gestionEmpleados(arbolb)
+            if opcion == 8: gestionEmpleados(arbolb)
 
-            if opcion == 9:
+            if opcion == 9: facturacion_pagos()
+
+            if opcion == 10:
                 print("Sesion Terminada")
                 break
 
@@ -1218,6 +1191,8 @@ def main():
             #listarErrores(errores,"Menu",e)
 
     guardar_reservaciones()
+    arbolb.serializar('arbol_serializado.pkl')
+    control.facturas.code()
 
 def inicializar_archivos():
     #try:
@@ -1237,5 +1212,8 @@ errores = Pila()
 acciones = Pila()
 cadena = "| {:<6} | {:<15}| {:<10} | {:>3} | {:<10} | {:>8} | {:>11} |{:>17} | {:<10} | {:<10} - {:>10} | {:>15} |"
 cadena2 = "| {:<12} | {:<12} | {:<8} | {:<8} | {:<12} | {:<15} |"
+
+
+
 
 inicializar_archivos()
